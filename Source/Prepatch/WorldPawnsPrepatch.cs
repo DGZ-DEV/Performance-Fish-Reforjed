@@ -19,7 +19,6 @@ namespace PerformanceFishReforjed.Prepatch
 
         internal static void Apply(ModuleDefinition module)
         {
-            Console.WriteLine("WorldPawnsPrepatch.Apply called");
             PatchesApplied = 0;
             PatchesFailed = 0;
 

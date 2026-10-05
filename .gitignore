@@ -1,6 +1,8 @@
-﻿# Artefactos de compilacion
+# Artefactos de compilacion
 Source/obj/
 Source/bin/
+Tools/bin/
+Tools/Verifier/obj/
 *.pdb
 
 # Logs y temporales

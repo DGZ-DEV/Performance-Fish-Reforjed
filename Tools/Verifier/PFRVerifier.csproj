@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net472 no trae los facades netstandard 2.1 que necesita la reflection sobre Assembly-CSharp
+         1.6. Con .NET (Core) 8+ los tipos netstandard se resuelven de forma nativa. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>PFRVerifier</AssemblyName>
+    <RootNamespace>PFRVerifier</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\bin\</OutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+  <PropertyGroup>
+    <!-- Al cargar el DLL del mod (net472) desde .NET 8 necesitamos compatibilidad. -->
+    <EnableLoadFromProjectReferences>true</EnableLoadFromProjectReferences>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Mono.Cecil viene IL-merged en el 0Harmony de Prepatcher; MISMA fuente que usa el mod. -->
+    <Reference Include="0Harmony">
+      <HintPath>C:\RimWorld\Mods\Prepatcher\Assemblies\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <!-- Solo necesitamos Assembly-CSharp para reflection sobre los tipos de reemplazo. -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+</Project>
