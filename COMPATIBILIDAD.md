@@ -5,45 +5,49 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 
 ## Superficie optimizada del Reforjed (qué toca nuestro mod)
 
-**Reescrituras de IL (prepatch, 53):**
+**Reescrituras de IL (prepatch, 32):**
 - `ThingDef`: BaseMarketValue, BaseMass, BaseFlammability, BaseMaxHitPoints
-- Comps: `ThingWithComps.GetComp`, `ThingDef.GetCompProperties`/HasComp, hediff/ability/map/world/game GetComponent
+- Comps: `ThingDef.GetCompProperties`/HasComp, hediff-def/ability/map/world/game GetComponent
+  (`ThingWithComps.GetComp` y `HediffUtility.TryGetComp` se **quitaron** en la revisión 2026-10-05)
 - `ListerThings`: Add/Remove/Contains/Clear/GetThingsOfType
 - `ListerBuildings`: AllBuildingsColonistOfDef/ColonistsHave(X)/AllColonistBuildingsOfType/AllBuildingsNonColonistOfDef
 - `GridsUtility.GetItemCount`
-- `StorageSettings.AllowedToAccept`
-- SlotGroup capacities
+- `StorageSettings.AllowedToAccept` (cachés separadas por Thing y por ThingDef)
 - `Room.ContainedBeds`
-- `WorldPawns` (AllPawnsAlive/OrDead, DefPreventingMothball)
-- `WorldObjectsHolder.Tick`
-- `GasGrid`: Tick/AddGas/AnyGasAt/DensityAt
-- `WorkGiver_DoBill`: PotentialWorkThingRequest, MaxPathDanger, ThingIsUsableBillGiver, ShouldSkip, IsUsableIngredient, GetBillGiverRootCell, GetMedicalCareCategory, TryFindBestBillIngredientsInSet (dispatch AllowMix/NoMix)
+- `WorldPawns` (AllPawnsAlive/OrDead; **DefPreventingMothball NO**: MissileGirl lo transpila)
+- ~~SlotGroup capacities~~ (quitado, sin ganancia — L2)
+- ~~`WorldObjectsHolder.Tick`~~ (revertido a vanilla — C1)
+- ~~`GasGrid`: Tick/AddGas/AnyGasAt/DensityAt~~ (revertido a vanilla — C2/H1)
+- ~~`WorkGiver_DoBill` (8 métodos)~~ (quitado, sin ganancia y rompía parches ajenos — L2/M5)
 
-**Enganches Harmony (runtime, 12):**
-- `Game.FinalizeInit` (vaciado caches)
-- `ListerBuildings` / `ThingGrid.Register/Deregister`
-- `HediffSet`: GetFirstHediffOfDef, HasHediff, GetNotMissingParts, DirtyCache
-- `GasGrid.ExposeData`
-- `StorageGroup.RemoveMember`/Notify_SettingsChanged
-- `Room.Role`/`Room.Owners`
-- `SlotGroup.Notify_AddedCell`/Notify_LostCell
-- `StoreUtility.TryFindBestBetterStoreCellForWorker`
-- `MassUtility.GearMass`/InventoryMass
-- `ThingOwner.ExposeData`/TryAdd/Remove
+**Enganches Harmony (runtime, activos: 5):**
+- `Game.FinalizeInit` (vaciado de caches + invalidación de DefStatCache)
+- `ListerBuildings` / `ThingGrid.Register/Deregister` (contador por celda)
+- `StorageSettings` (invalidación de AllowedToAccept al cambiar filtros)
+- `Building` spawn/despawn (índices de edificios)
+
+**Enganches desactivados o no conectados (vanilla, tras revisión 2026-10-05):**
+- ~~`HediffSet`: GetFirstHediffOfDef, HasHediff, GetNotMissingParts, DirtyCache~~ (no conectado — L1)
+- ~~`GasGrid.ExposeData`~~ (no hay grid paralelo — C2/H1)
+- ~~`StorageGroup.RemoveMember`/Notify_SettingsChanged~~ (desactivado — L1)
+- ~~`Room.Role`/`Room.Owners`~~ (no conectado — L1)
+- ~~`SlotGroup.Notify_AddedCell`/Notify_LostCell~~ (desactivado — L1)
+- ~~`StoreUtility.TryFindBestBetterStoreCellForWorker`~~ (desactivado — L1)
+- ~~`MassUtility.GearMass`/InventoryMass~~ (desactivado — L1)
+- ~~`ThingOwner.ExposeData`/TryAdd/Remove~~ (no conectado — L1; el postfix de `Remove` está escrito correcto para conectarse en el futuro)
 
 ---
 
 ## Conflictos REALES detectados (descompilado)
 
 ### 1. VanillaExpandedFramework (`OskarPotocki.VanillaFactionsExpanded.Core`)
-- **`MassUtility.Capacity`** → VEF lo parchea. **Reforjed parchea `MassUtility.GearMass`/`InventoryMass`** (distintos métodos; los parches de VEF añaden comps, coexistencia OK, no coinciden).
-- **`HediffSet.CalculatePain` / `BleedRateTotal`** → VEF. **Reforjed parchea `HediffSet.GetFirstHediffOfDef/HasHediff/GetNotMissingParts/DirtyCache`** (distintos). Coexisten.
-- **`WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix`** y **`TryFindBestIngredientsInSet_NoMixHelper`** → **VEF los parchea DIRECTAMENTE**. 
-  → Ref `patch 53`: nuestro prepatch reescribe `TryFindBestBillIngredientsInSet` para despachar a AllowMix/NoMix. Si VEF además parchea esos métodos, **el orden y la coexistencia deben verificarse**. NO hay conflicto fatal (Harmony encadena postfix/prefix sobre el método reescrito), pero SI crea una cadena: nuestro rewrite inyecta caches, VEF inyecta su filtro. Ambos funcionan, pero hay que **verificar que nuestro rewrite no rompa la firma que VEF espera**.
+- **`MassUtility.Capacity`** → VEF lo parchea. Reforjed **ya no** parchea `MassUtility.GearMass`/`InventoryMass` (desactivado por L1). Sin coincidencia.
+- **`HediffSet.CalculatePain` / `BleedRateTotal`** → VEF. Reforjed **no** parchea HediffSet (no conectado, L1). Sin coincidencia.
+- **`WorkGiver_DoBill.TryFindBestBillIngredientsInSet_AllowMix`** y **`TryFindBestIngredientsInSet_NoMixHelper`** → VEF los parchea DIRECTAMENTE. Reforjed **ya no reescribe** `TryFindBestBillIngredientsInSet` (quitado por L2/M5), así que la cadena descrita en revisiones anteriores ya no existe: VEF parchea los métodos vanilla sin intermediarios.
 
 ### 2. Vehicle-Framework (`SmashPhil.VehicleFramework`)
-- **`MassUtility.GearAndInventoryMass` / `Capacity` / `CanEverCarryAnything`** → VF los parchea (transpilers que ignoran mass de vehículos). **Reforjed parchea `GearMass`/`InventoryMass`** (los métodos base que VF usa). Coexistencia OK: VF transpila `GearAndInventoryMass` (que llama a nuestros `GearMass`/`InventoryMass`). Postfix/transpiler se apilan.
-- **`WorldObjectsHolder.AddToCache/RemoveFromCache/Recache`** y **`WorldObjectsHolderTick`** → VF crea su propio sistema de cache de vehículos. **Reforjed reescribe `WorldObjectsHolder.Tick`**. Coexisten (VF añade su propio WorldObjectHandler).
+- **`MassUtility.GearAndInventoryMass` / `Capacity` / `CanEverCarryAnything`** → VF los parchea (transpilers que ignoran mass de vehículos). Reforjed **ya no** parchea `GearMass`/`InventoryMass` (desactivado por L1). Sin coincidencia.
+- **`WorldObjectsHolder.AddToCache/RemoveFromCache/Recache`** y **`WorldObjectsHolderTick`** → VF crea su propio sistema de cache de vehículos. Reforjed **ya no** reescribe `WorldObjectsHolder.Tick` (revertido por C1). Coexisten sin intermediarios.
 - **`WorldPawns.GetSituation`** → VF. Reforjed no toca ese método. OK.
 
 ### 3. PickUpAndHaul (`Mehni.PickUpAndHaul`) — parcheo DINÁMICO
@@ -51,7 +55,7 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 - **`JobGiver_Haul.TryGiveJob`** transpiler → PUA modifica el IL de hauling. Reforjed no toca `JobGiver_Haul`. OK.
 - **`Pawn_InventoryTracker.Notify_ItemRemoved`** → PUA postfix. Reforjed no lo toca directamente. OK.
 - **`ITab_Pawn_Gear.DrawThingRow`** transpiler → PUA. Reforjed no toca. OK.
-- Reforjed `StoreUtility.TryFindBestBetterStoreCellForWorker` — PUA no parchea ese método. OK.
+- Reforjed **ya no** engancha `StoreUtility.TryFindBestBetterStoreCellForWorker` (desactivado por L1). OK.
 
 ### 4. Dubs Performance Analyzer (`Dubwise.DubsPerformanceAnalyzer`)
 - **Parchea casi TODO para medir** (perfautofixer). Esto es OPTIMO con nuestro mod: **sus patches envuelven** nuestros métodos reescritos y cacheados sin romperlos. **Reforjed debe CARGAR ANTES** para que DP mida las versiones cacheadas (no las vanilla). Confirmar orden de carga: Reforjed *loadAfter* DP no necesario; basta coexistencia.
@@ -62,7 +66,7 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 - Trabaja con la build **cargable** en `Combat Extended\Assemblies\CombatExtended.dll` (1.3 MB, ~28/6/2026). Se descompiló por completo (2.6 MB de código) y se extrajeron **113** targets `[HarmonyPatch]`.
 - **Solapamiento con la superficie del Reforjed: NINGUNO directo.**
   - `ListerThings.EverListable` → CE. Reforjed reescribe `ListerThings.Add/Remove/Contains/Clear/GetThingsOfType` (métodos distintos); `EverListable` no choca.
-  - `MassUtility.Capacity` → CE (y VEF). Reforjed parchea `MassUtility.GearMass`/`InventoryMass` (distintos).
+  - `MassUtility.Capacity` → CE (y VEF). Reforjed **ya no** parchea `MassUtility.GearMass`/`InventoryMass` (desactivado por L1).
   - `ThingDef.PostLoad` / `ThingDef.SpecialDisplayStats` → CE. Reforjed cachea `BaseMarketValue/BaseMass/BaseFlammability/BaseMaxHitPoints` (distintos métodos).
   - `Game.LoadGame`/`Game.ExposeData` → CE. Reforjed usa `Game.FinalizeInit` (hook distinto).
   - No toca `HediffSet.DirtyCache`, `WorkGiver_DoBill`, `GasGrid`, `StorageSettings`, `StoreUtility`, `WorldObjectsHolder`, `GridsUtility.GetItemCount`, `SlotGroup`.
@@ -139,21 +143,17 @@ cuerpo y el Harmony patch no compiten. La capa de compatibilidad garantiza:
 3. Poder desactivar los ajustes de un mod concreto si el usuario encuentra un caso particular.
 
 **Casos de método compartido verificados (seguros):**
-- `HediffSet.DirtyCache` — MissileGirl (postfix) + Reforjed (postfix). Ambos son postfix que solo hacen
-  sus propias limpiezas → se apilan, sin conflicto.
-- `WorkGiver_DoBill.TryFindBestBillIngredientsInSet*` — VEF parchea `_AllowMix`/`_NoMixHelper`;
-  Reforjed reescribe `TryFindBestBillIngredientsInSet` como un despachador que llama a
-  `_AllowMix`/`_NoMix` → los parches de VEF siguen envolviendo esos métodos internos. Cadena intacta.
-- `MassUtility.GearMass`/`InventoryMass` — Vehicle-Framework transpila `GearAndInventoryMass` (que
-  los llama) y VEF parchea `Capacity`; los Harmony patches se apilan sobre nuestros métodos base. OK.
+- `HediffSet.DirtyCache` — MissileGirl (postfix) + Reforjed **ya no** conecta HediffSet (no conectado, L1): solo queda MissileGirl sobre vanilla.
+- `WorkGiver_DoBill.TryFindBestBillIngredientsInSet*` — VEF parchea `_AllowMix`/`_NoMixHelper`; Reforjed **ya no** reescribe `TryFindBestBillIngredientsInSet` (quitado por L2/M5): VEF parchea los métodos vanilla sin intermediarios.
+- `MassUtility.GearMass`/`InventoryMass` — Reforjed **ya no** los parchea (desactivado por L1): Vehicle-Framework y VEF quedan sobre vanilla.
 - `Game.FinalizeInit` — RimHUD, HugsLib y Reforjed lo postfixean con propósitos distintos. Se suman.
 
 ## RESUMEN DE DECISIONES DE COMPATIBILIDAD
 
 | Mod | Coexiste | Acción requerida en Reforjed |
 |---|---|---|
-| VEF | Sí | Verificar firma `TryFindBestBillIngredientsInSet` no rompa filtro VEF |
-| Vehicle-Framework | Sí | Verificar cadena `GearMass`/`InventoryMass` ← `GearAndInventoryMass` |
+| VEF | Sí | Ninguna (métodos compartidos ya no se tocan tras L1/L2) |
+| Vehicle-Framework | Sí | Ninguna (ídem) |
 | PickUpAndHaul | Sí | Ninguna (métodos distintos) |
 | Dubs PA | Sí | Cargar antes; Medir versiones cacheadas (mejora) |
 | CombatExtended | Sí | Verificada con build cargable (113 patches, sin solapamiento directo) |
@@ -162,7 +162,7 @@ cuerpo y el Harmony patch no compiten. La capa de compatibilidad garantiza:
 | Achtung! | Sí | Ninguna |
 | AllowTool | Sí | Ninguna |
 | Character Editor | Sí | Ninguna |
-| MissileGirl | ⚠️ | `HediffSet.DirtyCache` compartido: verificar orden |
+| MissileGirl | Sí | `DefPreventingMothball` ya no se reescribe (4d16e7b); HediffSet no conectado |
 | HugsLib | Sí | Ninguna |
 | VanillaVehicles | Sí | Ninguna |
 | kNumbers | N/A | Inerte (0.16) |

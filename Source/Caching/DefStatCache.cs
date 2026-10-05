@@ -1,3 +1,10 @@
+// This file is a Modification (MPL-2.0, section 1.10) of the original
+// Performance Fish by bradson (https://github.com/bbradson/Performance-Fish),
+// which is covered by the Mozilla Public License 2.0.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using System.Runtime.CompilerServices;
 using System.Threading;
 using PerformanceFishReforjed.Prepatch;
@@ -50,6 +57,21 @@ namespace PerformanceFishReforjed.Caching
         {
             Interlocked.Exchange(ref _hits, 0);
             Interlocked.Exchange(ref _misses, 0);
+        }
+
+        /// <summary>
+        /// Vacía la máscara de todos los defs. Se llama al cargar/descargar una partida (a través de
+        /// <see cref="CacheLifecycle"/>): las stats a nivel de def dependen del factor de stat del
+        /// escenario de la partida actual, así que un valor leído en una partida o en el menú
+        /// principal dejaría obsoleto el de la siguiente (Hallazgo H5).
+        /// </summary>
+        internal static void InvalidateAll()
+        {
+            var allDefs = Verse.DefDatabase<ThingDef>.AllDefsListForReading;
+            for (int i = 0; i < allDefs.Count; i++)
+            {
+                allDefs[i].ReforjedStatMask() = 0;
+            }
         }
 
         [MethodImpl(MethodImplOptions.NoInlining)]

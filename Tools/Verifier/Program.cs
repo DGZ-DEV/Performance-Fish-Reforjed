@@ -233,17 +233,17 @@ namespace PFRVerifier
             string[] counterTypes =
             {
                 "PerformanceFishReforjed.Prepatch.DefStatCachePrepatch",       // gettersRewritten=4
-                "PerformanceFishReforjed.Prepatch.GetCompCachingPrepatch",      // 11/11
+                "PerformanceFishReforjed.Prepatch.GetCompCachingPrepatch",      // 9/9 (L2: sin GetComp<T>; H3: sin HediffUtility.TryGetComp)
                 "PerformanceFishReforjed.Prepatch.ListerThingsPrepatch",        // 6/6
                 "PerformanceFishReforjed.Prepatch.ListerBuildingsPrepatch",     // 7/7
                 "PerformanceFishReforjed.Prepatch.GridsUtilityPrepatch",        // 1/1
                 "PerformanceFishReforjed.Prepatch.StorageSettingsPrepatch",     // storagePatches=2/2
-                "PerformanceFishReforjed.Prepatch.StoreUtilitySlotGroupPrepatch",// slotGroupPatches=3/3
+                "PerformanceFishReforjed.Prepatch.StoreUtilitySlotGroupPrepatch",// slotGroupPatches=0/0 (L2: reescritura sin ganancia)
                 "PerformanceFishReforjed.Prepatch.RoomPrepatch",                // 1/1
                 "PerformanceFishReforjed.Prepatch.WorldPawnsPrepatch",          // 2/2 (DefPreventingMothball excluido: MissileGirl lo transpila)
-                "PerformanceFishReforjed.Prepatch.WorldObjectsHolderPrepatch",  // 1/1
-                "PerformanceFishReforjed.Prepatch.GasGridPrepatch",             // 6/6
-                "PerformanceFishReforjed.Prepatch.WorkGiver_DoBillPrepatch",    // 8/8
+                "PerformanceFishReforjed.Prepatch.WorldObjectsHolderPrepatch",  // 0/0 (C1: revertido a vanilla)
+                "PerformanceFishReforjed.Prepatch.GasGridPrepatch",             // 0/0 (C2/H1: revertido a vanilla)
+                "PerformanceFishReforjed.Prepatch.WorkGiver_DoBillPrepatch",    // 0/0 (L2/M5: reescritura sin ganancia)
             };
 
             int totalApplied = 0;
@@ -276,7 +276,9 @@ namespace PFRVerifier
                 {
                     applied = GetIntStatic(t, "PatchedCount");
                     failed = GetIntStatic(t, "FailedCount");
-                    expected = typeName.EndsWith("StorageSettingsPrepatch") ? 2 : 3;
+                    // StorageSettings conserva su optimizacion (2); StoreUtilitySlotGroup quedo
+                    // desactivado por L2 (0).
+                    expected = typeName.EndsWith("StorageSettingsPrepatch") ? 2 : 0;
                 }
                 else
                 {

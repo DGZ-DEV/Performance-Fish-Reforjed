@@ -42,6 +42,25 @@ namespace PerformanceFishReforjed
                 "Apply compatibility adjustments when other mods are detected. The Reforjed still optimizes either way.");
 
             listing.Gap(8f);
+            listing.Label("Prepatch groups (apply on next game start):");
+            listing.CheckboxLabeled("ThingDef stat cache", ref PerformanceFishReforjedSettings.PrepatchGroup_DefStatCache,
+                "Uncheck to disable the BaseMarketValue/BaseMass/BaseFlammability/BaseMaxHitPoints cache.");
+            listing.CheckboxLabeled("Component cache", ref PerformanceFishReforjedSettings.PrepatchGroup_GetCompCaching,
+                "Uncheck to disable the def/ability/map/world/game comp caches.");
+            listing.CheckboxLabeled("Thing lists (ListerThings)", ref PerformanceFishReforjedSettings.PrepatchGroup_ListerThings,
+                "Uncheck to disable the per-def/per-group thing indexes.");
+            listing.CheckboxLabeled("Building lists (ListerBuildings)", ref PerformanceFishReforjedSettings.PrepatchGroup_ListerBuildings,
+                "Uncheck to disable the colonist building indexes.");
+            listing.CheckboxLabeled("Per-cell item counter", ref PerformanceFishReforjedSettings.PrepatchGroup_GridsUtility,
+                "Uncheck to disable the GridsUtility.GetItemCount counter.");
+            listing.CheckboxLabeled("Storage filters (AllowedToAccept)", ref PerformanceFishReforjedSettings.PrepatchGroup_StorageSettings,
+                "Uncheck to disable the AllowedToAccept caches.");
+            listing.CheckboxLabeled("Room beds (ContainedBeds)", ref PerformanceFishReforjedSettings.PrepatchGroup_Room,
+                "Uncheck to disable the Room.ContainedBeds index.");
+            listing.CheckboxLabeled("World pawns lists", ref PerformanceFishReforjedSettings.PrepatchGroup_WorldPawns,
+                "Uncheck to disable the AllPawnsAlive/AllPawnsAliveOrDead caches.");
+
+            listing.Gap(8f);
             listing.Label($"Prepatch stamp: {ReadStamp() ?? "not found"}");
 
             listing.Gap(8f);
@@ -107,6 +126,19 @@ namespace PerformanceFishReforjed
         /// </summary>
         public static bool EnableCompatibility = true;
 
+        // Toggles por grupo de prepatch (Hallazgo L3). Default true = grupo ACTIVO.
+        // En el XML se guarda la clave inversa `prepatchDisable*` (true = desactivado), que es la
+        // que lee PrepatchConfig antes de cargar el juego; un cambio aquí se aplica en el
+        // siguiente arranque (como todo lo que toca el prepatch).
+        public static bool PrepatchGroup_DefStatCache = true;
+        public static bool PrepatchGroup_GetCompCaching = true;
+        public static bool PrepatchGroup_ListerThings = true;
+        public static bool PrepatchGroup_ListerBuildings = true;
+        public static bool PrepatchGroup_GridsUtility = true;
+        public static bool PrepatchGroup_StorageSettings = true;
+        public static bool PrepatchGroup_Room = true;
+        public static bool PrepatchGroup_WorldPawns = true;
+
         // Toggles individuales por mod. Default true = comportamiento recomendado (coexistir y
         // conservar la optimizacion). Poner false desactiva SOLO los ajustes de compatibilidad de
         // ese mod (no desactiva el rendimiento base del Reforjed).
@@ -132,6 +164,17 @@ namespace PerformanceFishReforjed
             Scribe_Values.Look(ref EnableInternalLogging, "enableInternalLogging", true);
             Scribe_Values.Look(ref EnableCompatibility, "enableCompatibility", true);
 
+            // Los grupos se guardan como "desactivados" en el XML (la clave que lee PrepatchConfig
+            // en la fase de prepatch): se escribe el inverso del toggle y se lee invirtiendo.
+            LookGroup(ref PrepatchGroup_DefStatCache, "prepatchDisableDefStatCache");
+            LookGroup(ref PrepatchGroup_GetCompCaching, "prepatchDisableGetCompCaching");
+            LookGroup(ref PrepatchGroup_ListerThings, "prepatchDisableListerThings");
+            LookGroup(ref PrepatchGroup_ListerBuildings, "prepatchDisableListerBuildings");
+            LookGroup(ref PrepatchGroup_GridsUtility, "prepatchDisableGridsUtility");
+            LookGroup(ref PrepatchGroup_StorageSettings, "prepatchDisableStorageSettings");
+            LookGroup(ref PrepatchGroup_Room, "prepatchDisableRoom");
+            LookGroup(ref PrepatchGroup_WorldPawns, "prepatchDisableWorldPawns");
+
             Scribe_Values.Look(ref Compat_Achtung, "compatAchtung", true);
             Scribe_Values.Look(ref Compat_CharacterEditor, "compatCharacterEditor", true);
             Scribe_Values.Look(ref Compat_CombatExtended, "compatCombatExtended", true);
@@ -147,6 +190,18 @@ namespace PerformanceFishReforjed
             Scribe_Values.Look(ref Compat_VanillaExpandedFramework, "compatVanillaExpandedFramework", true);
             Scribe_Values.Look(ref Compat_VanillaVehiclesExpanded, "compatVanillaVehiclesExpanded", true);
             Scribe_Values.Look(ref Compat_VehicleFramework, "compatVehicleFramework", true);
+        }
+
+        /// <summary>
+        /// Guarda/lee un toggle de grupo en la clave <c>prepatchDisable*</c> del XML, invertido:
+        /// el toggle público es "grupo activo" (true) y en disco se persiste "desactivado" (true),
+        /// que es exactamente lo que lee <see cref="Prepatch.PrepatchConfig"/> antes del prepatch.
+        /// </summary>
+        private static void LookGroup(ref bool groupEnabled, string disableKey)
+        {
+            bool disabled = !groupEnabled;
+            Scribe_Values.Look(ref disabled, disableKey, false);
+            groupEnabled = !disabled;
         }
     }
 }

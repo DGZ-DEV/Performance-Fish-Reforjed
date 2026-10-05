@@ -13,8 +13,11 @@ namespace PerformanceFishReforjed.Prepatch
         internal static int PatchesApplied;
         internal static int PatchesFailed;
 
-        // Total esperado: 6 sustituciones de cuerpo de método
-        internal const int ExpectedPatches = 6;
+        // Total esperado: 0. El grupo quedó desactivado: la optimización de gas introdujo dos
+        // regresiones críticas (el humo nunca se disipaba y los datos vanilla quedaban
+        // desactualizados), así que se revierte a comportamiento vanilla íntegro.
+        // Ver Hallazgos C2 y H1 de 2026-10-05-findings-for-author.es.md.
+        internal const int ExpectedPatches = 0;
 
         private const string GasGridTypeName = "Verse.GasGrid";
         private static readonly Type Caches = typeof(GasGridOptimization);

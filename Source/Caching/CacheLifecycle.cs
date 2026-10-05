@@ -67,37 +67,18 @@ namespace PerformanceFishReforjed.Caching
             ApplySlotGroupCapacityPatches();
             ApplyStorageGroupCapacityPatches();
             ApplyMassUtilityPatches();
-            ApplyGasGridPatches();
         }
 
         /// <summary>
         /// Engancha parches de compatibilidad de GasGrid (ExposeData para persistencia).
+        ///
+        /// DESACTIVADO (Hallazgos C2/H1): el prepatch de gas se revirtió a vanilla íntegro, y este
+        /// parche copiaba entre los grids paralelos y el array vanilla alrededor de ExposeData.
+        /// Con el prepatch desactivado volvería a copiar los grids vacíos sobre el array real del
+        /// juego en cada guardado, corrompiendo la partida. Se deja vacío a propósito.
         /// </summary>
         private static void ApplyGasGridPatches()
         {
-            MethodInfo? targetExposeData = AccessTools.Method(typeof(GasGrid), nameof(GasGrid.ExposeData));
-            if (targetExposeData != null)
-            {
-                MethodInfo? prefixExpose = AccessTools.Method(typeof(Prepatch.GasGridHarmonyPatches.GasGrid_ExposeData_Patch), "Prefix");
-                MethodInfo? postfixExpose = AccessTools.Method(typeof(Prepatch.GasGridHarmonyPatches.GasGrid_ExposeData_Patch), "Postfix");
-
-                if (prefixExpose != null && postfixExpose != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetExposeData,
-                            prefix: new HarmonyMethod(prefixExpose),
-                            postfix: new HarmonyMethod(postfixExpose));
-
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Optimized persistence hooked to GasGrid.ExposeData.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch GasGrid.ExposeData: {e}");
-                    }
-                }
-            }
         }
 
         /// <summary>
@@ -371,186 +352,57 @@ namespace PerformanceFishReforjed.Caching
         /// <summary>
         /// Engancha el parche de capacidad de SlotGroup (C5).
         ///
-        /// Engancha:
-        /// 1. Postfijos en SlotGroup.Notify_AddedCell y Notify_LostCell para mantener la cache.
-        /// 2. Prefijo en StoreUtility.TryFindBestBetterStoreCellForWorker para el atajo de capacidad.
+        /// DESACTIVADO (Hallazgo L1): los enganches de esta familia nunca llegaron a aplicarse (los
+        /// nombres de metodo con barra no los encuentra <c>AccessTools.Method</c>), y si se
+        /// conectaran tal como estan escritos romperian el juego:
+        /// <list type="bullet">
+        /// <item><c>SlotGroupCapacityCache.IsLikelyFull</c> considera lleno un grupo por encima de
+        /// 3 objetos por celda, ignorando los limites por celda que fijan los edificios de
+        /// almacenamiento y los mods: un almacen legítimo quedaria "lleno" y nunca recibiria
+        /// objetos acarreados.</item>
+        /// <item>El atajo sobre <c>StoreUtility.TryFindBestBetterStoreCellForWorker</c> corta el
+        /// metodo original cuando esa cache (desincronizada) dice "lleno": se dejan de acarrear
+        /// objetos a celdas con sitio real.</item>
+        /// </list>
+        /// Se deja vacio a proposito: el comportamiento es exactamente el de vanilla.
         /// </summary>
         private static void ApplySlotGroupCapacityPatches()
         {
-            // Notify_AddedCell
-            MethodInfo? targetAdded = AccessTools.Method(typeof(SlotGroup), nameof(SlotGroup.Notify_AddedCell));
-            if (targetAdded != null)
-            {
-                MethodInfo? postfixAdded = AccessTools.Method(typeof(Prepatch.SlotGroupCapacityPatches),
-                    "Notify_AddedCell_Patch/Postfix");
-                if (postfixAdded != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetAdded, postfix: new HarmonyMethod(postfixAdded));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] SlotGroupCapacityCache hooked to SlotGroup.Notify_AddedCell.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch SlotGroup.Notify_AddedCell: {e}");
-                    }
-                }
-            }
-
-            // Notify_LostCell
-            MethodInfo? targetLost = AccessTools.Method(typeof(SlotGroup), nameof(SlotGroup.Notify_LostCell));
-            if (targetLost != null)
-            {
-                MethodInfo? postfixLost = AccessTools.Method(typeof(Prepatch.SlotGroupCapacityPatches),
-                    "Notify_LostCell_Patch/Postfix");
-                if (postfixLost != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetLost, postfix: new HarmonyMethod(postfixLost));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] SlotGroupCapacityCache hooked to SlotGroup.Notify_LostCell.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch SlotGroup.Notify_LostCell: {e}");
-                    }
-                }
-            }
-
-            // TryFindBestBetterStoreCellForWorker - atajo de capacidad
-            MethodInfo? targetWorker = AccessTools.DeclaredMethod(typeof(StoreUtility), "TryFindBestBetterStoreCellForWorker");
-            if (targetWorker != null)
-            {
-                MethodInfo? prefixWorker = AccessTools.Method(typeof(Prepatch.StoreUtilityCapacityPatch),
-                    "TryFindBestBetterStoreCellForWorker_CapacityPatch/Prefix");
-                if (prefixWorker != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetWorker, prefix: new HarmonyMethod(prefixWorker));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Capacity shortcut hooked to StoreUtility.TryFindBestBetterStoreCellForWorker.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch StoreUtility.TryFindBestBetterStoreCellForWorker: {e}");
-                    }
-                }
-            }
         }
 
         /// <summary>
         /// Engancha el parche de capacidad de StorageGroup (C6).
         ///
-        /// Engancha:
-        /// 1. Postfijos en StorageGroup.RemoveMember y Notify_SettingsChanged para mantener la cache.
+        /// DESACTIVADO (Hallazgo L1): si se conectara tal como esta escrito, romperia el juego:
+        /// <c>StorageGroupCapacityCache.Recalculate</c> comprueba <c>members[i] is SlotGroup</c>,
+        /// pero <c>StorageGroup.members</c> contiene <c>IStorageGroupMember</c> (no <c>SlotGroup</c>),
+        /// asi que la condicion nunca es true y el grupo enlazado tendria capacidad cero y nunca
+        /// recibiria objetos acarreados.
+        /// Se deja vacio a proposito: el comportamiento es exactamente el de vanilla.
         /// </summary>
         private static void ApplyStorageGroupCapacityPatches()
         {
-            // RemoveMember
-            MethodInfo? targetMemberRemoved = AccessTools.Method(typeof(StorageGroup), nameof(StorageGroup.RemoveMember));
-            if (targetMemberRemoved != null)
-            {
-                MethodInfo? postfixMemberRemoved = AccessTools.Method(typeof(Prepatch.StorageGroupCapacityPatches),
-                    "RemoveMember_Patch/Postfix");
-                if (postfixMemberRemoved != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetMemberRemoved, postfix: new HarmonyMethod(postfixMemberRemoved));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageGroupCapacityCache hooked to StorageGroup.RemoveMember.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch StorageGroup.RemoveMember: {e}");
-                    }
-                }
-            }
-
-            // Notify_SettingsChanged
-            MethodInfo? targetSettingsChanged = AccessTools.Method(typeof(StorageGroup), nameof(StorageGroup.Notify_SettingsChanged));
-            if (targetSettingsChanged != null)
-            {
-                MethodInfo? postfixSettingsChanged = AccessTools.Method(typeof(Prepatch.StorageGroupCapacityPatches),
-                    "Notify_SettingsChanged_Patch/Postfix");
-                if (postfixSettingsChanged != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetSettingsChanged, postfix: new HarmonyMethod(postfixSettingsChanged));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageGroupCapacityCache hooked to StorageGroup.Notify_SettingsChanged.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch StorageGroup.Notify_SettingsChanged: {e}");
-                    }
-                }
-            }
         }
 
         /// <summary>
-        /// Engancha los parches de caché de masa de pawns (MassUtilityCaching).
+        /// Engancha los parches de cache de masa de pawns (MassUtilityCaching).
         ///
-        /// Engancha:
-        /// 1. Prefijos en MassUtility.GearMass e InventoryMass.
+        /// DESACTIVADO (Hallazgo L1 + Hallazgo de la auditoria): nunca llego a aplicarse por el
+        /// mismo motivo que C5/C6, y si se conectara seria incorrecto: <c>PawnMassCache</c> comparte
+        /// un unico <c>LastUpdatedTick</c> entre gear e inventario (con TTL distintos de 3072 y 1024),
+        /// asi que refrescar uno invalidaria con la marca del otro y la masa del equipo podria leerse
+        /// como masa de inventario hasta 3072 ticks. Se deja vacio a proposito: el comportamiento es
+        /// exactamente el de vanilla.
         /// </summary>
         private static void ApplyMassUtilityPatches()
         {
-            // GearMass
-            MethodInfo? targetGearMass = AccessTools.Method(typeof(MassUtility), nameof(MassUtility.GearMass));
-            if (targetGearMass != null)
-            {
-                MethodInfo? prefixGearMass = AccessTools.Method(typeof(Prepatch.MassUtilityPatches),
-                    "GearMass_Patch/Prefix");
-                MethodInfo? postfixGearMass = AccessTools.Method(typeof(Prepatch.MassUtilityPatches),
-                    "GearMass_Patch/Postfix");
-                if (prefixGearMass != null && postfixGearMass != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetGearMass, prefix: new HarmonyMethod(prefixGearMass), postfix: new HarmonyMethod(postfixGearMass));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Mass cache hooked to MassUtility.GearMass.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch MassUtility.GearMass: {e}");
-                    }
-                }
-            }
-
-            // InventoryMass
-            MethodInfo? targetInventoryMass = AccessTools.Method(typeof(MassUtility), nameof(MassUtility.InventoryMass));
-            if (targetInventoryMass != null)
-            {
-                MethodInfo? prefixInventoryMass = AccessTools.Method(typeof(Prepatch.MassUtilityPatches),
-                    "InventoryMass_Patch/Prefix");
-                MethodInfo? postfixInventoryMass = AccessTools.Method(typeof(Prepatch.MassUtilityPatches),
-                    "InventoryMass_Patch/Postfix");
-                if (prefixInventoryMass != null && postfixInventoryMass != null)
-                {
-                    try
-                    {
-                        PerformanceFishReforjedMod.HarmonyInstance.Patch(targetInventoryMass, prefix: new HarmonyMethod(prefixInventoryMass), postfix: new HarmonyMethod(postfixInventoryMass));
-                        if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Mass cache hooked to MassUtility.InventoryMass.");
-                    }
-                    catch (Exception e)
-                    {
-                        Log.Error($"[PerformanceFishReforjed] Failed to patch MassUtility.InventoryMass: {e}");
-                    }
-                }
-            }
         }
 
         /// <summary>Postfix: partida nueva o cargada, las caches anteriores ya no valen.</summary>
         private static void OnGameFinalizeInit()
         {
             CacheRegistry.ClearAll();
+            DefStatCache.InvalidateAll();
             ClearCount++;
 
             if (PerformanceFishReforjedSettings.EnableInternalLogging)

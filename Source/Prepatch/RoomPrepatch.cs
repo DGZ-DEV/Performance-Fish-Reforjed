@@ -1,3 +1,10 @@
+// This file is a Modification (MPL-2.0, section 1.10) of the original
+// Performance Fish by bradson (https://github.com/bbradson/Performance-Fish),
+// which is covered by the Mozilla Public License 2.0.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using RimWorld;
@@ -50,6 +57,10 @@ namespace PerformanceFishReforjed.Prepatch
         {
             var regions = instance.Regions;
             var result = new List<Building_Bed>();
+            // El vanilla (Room.ContainedAndAdjacentThings) deduplica con uniqueContainedThingsSet.
+            // Una cama se registra en cada región que toca, así que sin este conjunto una cama que
+            // cruza dos regiones de la misma habitación se listaría dos veces (Hallazgo M2).
+            var seen = new HashSet<Building_Bed>();
 
             for (var i = regions.Count; i-- > 0;)
             {
@@ -67,7 +78,7 @@ namespace PerformanceFishReforjed.Prepatch
 
                 for (var j = beds.Count; j-- > 0;)
                 {
-                    if (beds[j] is Building_Bed bed)
+                    if (beds[j] is Building_Bed bed && seen.Add(bed))
                     {
                         result.Add(bed);
                     }

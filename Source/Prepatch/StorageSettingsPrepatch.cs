@@ -120,7 +120,7 @@ namespace PerformanceFishReforjed.Prepatch
 
             // Recursión hacia el padre (con cache)
             result = AllowedToAccept_Thing(parent, t);
-            cache.Update(t.thingIDNumber, result);
+            cache.Update(isThing: true, t.thingIDNumber, result);
             return result;
         }
 
@@ -155,7 +155,7 @@ namespace PerformanceFishReforjed.Prepatch
                 return true;
 
             result = AllowedToAccept_ThingDef(parent, def);
-            cache.Update(def.shortHash, result);
+            cache.Update(isThing: false, def.shortHash, result);
             return result;
         }
     }

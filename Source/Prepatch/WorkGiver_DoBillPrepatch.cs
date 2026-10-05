@@ -19,8 +19,16 @@ namespace PerformanceFishReforjed.Prepatch
         internal static int PatchesApplied;
         internal static int PatchesFailed;
 
-        /// <summary>Total esperado: 8 sustituciones de cuerpo.</summary>
-        internal const int ExpectedPatches = 8;
+        /// <summary>
+        /// Total esperado: 0 sustituciones.
+        ///
+        /// DESACTIVADO (Hallazgos L2/M5): cada cuerpo de reemplazo coincide con el de vanilla, asi
+        /// que no gana nada y bloquea cualquier transpiler futuro sobre esos metodos; el
+        /// <c>ShouldSkip</c> de reemplazo ademas llama a la copia estatica de este mod en lugar del
+        /// metodo de vanilla, saltandose los parches de Harmony ajenos. Se deja sin aplicar: el
+        /// comportamiento es exactamente el de vanilla.
+        /// </summary>
+        internal const int ExpectedPatches = 0;
 
         private const string TypeName = "RimWorld.WorkGiver_DoBill";
         private static readonly Type Caches = typeof(WorkGiverDoBillOptimization);

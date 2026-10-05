@@ -1,3 +1,10 @@
+// This file is a Modification (MPL-2.0, section 1.10) of the original
+// Performance Fish by bradson (https://github.com/bbradson/Performance-Fish),
+// which is covered by the Mozilla Public License 2.0.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using System;
 using PerformanceFishReforjed.Prepatch;
 using Verse;
@@ -41,10 +48,12 @@ namespace PerformanceFishReforjed.Caching
     /// </summary>
     internal static class ItemCountGrid
     {
-        /// <summary>Reconstrucción cada 50 ticks (~0.8 s) para evitar deriva. El vanilla no tiene
-        /// auto-reparación, pero nosotros sí. Un intervalo menor mantiene el contador sincronizado
-        /// con el ThingGrid real.</summary>
-        private const int RebuildIntervalTicks = 50;
+        /// <summary>Reconstrucción completa una vez por día de juego (60000 ticks), como auto-reparación
+        /// contra desviaciones provocadas por algo ajeno al ThingGrid. El vanilla no tiene
+        /// auto-reparación, pero nosotros sí. Un intervalo menor era una regresión de rendimiento
+        /// (un recorrido de todas las celdas cada 0.8 s) y contradecía la documentación de la clase.
+        /// Ver Hallazgo M3 de 2026-10-05-findings-for-author.es.md.</summary>
+        private const int RebuildIntervalTicks = 60000;
 
         /// <summary>Datos del mapa, creandolos y sembrandolos en el primer uso.</summary>
         internal static ItemCountGridData Grid(Map map)
@@ -84,18 +93,25 @@ namespace PerformanceFishReforjed.Caching
 
             // Auto-reparacion perezosa tambien aqui: el hook de registro es un sitio natural para
             // comprobarlo, porque se ejecuta con cada aparicion y no en el bucle de busqueda.
+            // IMPORTANTE (Hallazgo M3): si acaba de reconstruirse, el rebuild ya refleja el estado
+            // actual de la celda (el postfix corre DESPUES de que vanilla muto la lista), asi que
+            // NO se debe aplicar el delta encima o se cuenta la misma cosa dos veces (+1 igualar
+            // un alta, -1 una baja).
             int ticks = Ticks;
+            bool didRebuild = false;
             if (ticks - data.LastRebuildTick > RebuildIntervalTicks)
             {
                 Rebuild(map, data);
                 data.LastRebuildTick = ticks;
+                didRebuild = true;
             }
 
             int index = map.cellIndices.CellToIndex(cell);
             if ((uint)index >= (uint)data.Counts.Length)
                 return;
 
-            data.Counts[index] += delta;
+            if (!didRebuild)
+                data.Counts[index] += delta;
         }
 
         /// <summary>

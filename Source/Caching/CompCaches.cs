@@ -1,3 +1,10 @@
+// This file is a Modification (MPL-2.0, section 1.10) of the original
+// Performance Fish by bradson (https://github.com/bbradson/Performance-Fish),
+// which is covered by the Mozilla Public License 2.0.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
@@ -90,12 +97,12 @@ namespace PerformanceFishReforjed.Caching
     /// <summary>
     /// Entrada de cache de <c>ThingDef.HasComp&lt;T&gt;()</c>.
     ///
-    /// Es un tipo distinto del anterior A PROPOSITO: el tipo de la entrada es lo que da una cache
-    /// separada (el titular <c>IntCaches&lt;TValue&gt;</c> es estatico por instanciacion cerrada).
-    /// Si ambos metodos compartieran la entrada, las claves de uno podrian leerse como las del
-    /// otro y devolver un booleano incorrecto.
+    /// Es generica sobre <c>T</c> A PROPOSITO: el titular <c>IntCaches&lt;TValue&gt;</c> es
+    /// estatico por instanciacion cerrada, asi que cada <c>T</c> recibe su propia tabla y la
+    /// respuesta de <c>HasComp&lt;X&gt;()</c> no se filtra a <c>HasComp&lt;Y&gt;()</c> sobre el
+    /// mismo def (Hallazgo H2 de 2026-10-05-findings-for-author.es.md).
     /// </summary>
-    internal struct HasCompGenericEntry
+    internal struct HasCompEntry<T> where T : ThingComp
     {
         public bool Valid;
         public int ListVersion;
@@ -371,7 +378,8 @@ namespace PerformanceFishReforjed.Caching
             int combined = Combine(key, compType.TypeHandle.GetHashCode());
 
             ref HasCompByTypeEntry entry = ref IntCaches<HasCompByTypeEntry>.Cache.GetOrAdd(combined);
-            if (entry.Valid && entry.ListVersion == comps._version && entry.CompType == compType)
+            if (entry.Valid && entry.ListVersion == comps._version
+                && ReferenceEquals(entry.List, comps) && entry.CompType == compType)
             {
                 CompCacheCounters.AddHit();
                 return entry.HasComp;
@@ -406,7 +414,7 @@ namespace PerformanceFishReforjed.Caching
             if (key < 0)
                 return FindCompClass<T>(comps);
 
-            ref HasCompGenericEntry entry = ref IntCaches<HasCompGenericEntry>.Cache.GetOrAdd(key);
+            ref HasCompEntry<T> entry = ref IntCaches<HasCompEntry<T>>.Cache.GetOrAdd(key);
             if (entry.IsValidFor(comps, comps._version))
             {
                 CompCacheCounters.AddHit();

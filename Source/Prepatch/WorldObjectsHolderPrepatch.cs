@@ -15,7 +15,11 @@ namespace PerformanceFishReforjed.Prepatch
         internal static int PatchesApplied;
         internal static int PatchesFailed;
 
-        internal const int ExpectedPatches = 1;
+        // Reescritura desactivada (0 aplicadas). La sustitución de cuerpo llamaba solo a
+        // WorldObject.Tick y nunca a TickInterval, por lo que caravanas, cápsulas de
+        // transporte, lanzaderas y gravships nunca avanzaban (Hallazgo C1). Se revierte a
+        // vanilla. Aplicar() no reescribe nada.
+        internal const int ExpectedPatches = 0;
 
         internal static void Apply(ModuleDefinition module)
         {

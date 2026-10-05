@@ -1,3 +1,10 @@
+// This file is a Modification (MPL-2.0, section 1.10) of the original
+// Performance Fish by bradson (https://github.com/bbradson/Performance-Fish),
+// which is covered by the Mozilla Public License 2.0.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using HarmonyLib;
 using PerformanceFishReforjed.Caching;
 using PerformanceFishReforjed.Prepatch;
@@ -60,11 +67,11 @@ namespace PerformanceFishReforjed.Listers
         }
 
         [HarmonyPatch(typeof(ThingOwner<Thing>), nameof(ThingOwner<Thing>.Remove))]
-        [HarmonyPrefix]
-        public static bool Remove_Prefix<T>(ThingOwner<T> __instance, Thing item, ref bool __result) where T : Thing
+        [HarmonyPostfix]
+        public static void Remove_Postfix<T>(ThingOwner<T> __instance) where T : Thing
         {
-            if (__instance == null || item == null)
-                return true;
+            if (__instance == null)
+                return;
 
             ref var indexMap = ref __instance.ReforjedThingOwnerIndexMap();
             if (indexMap == null)
@@ -72,38 +79,22 @@ namespace PerformanceFishReforjed.Listers
 
             var innerList = __instance.innerList;
             if (innerList == null)
-                return true;
-
-            int thingID = item.thingIDNumber;
-            int index = -1;
-
-            if (indexMap.TryGet(thingID, out int knownIndex) && knownIndex >= 0 && knownIndex < innerList.Count && innerList[knownIndex] == item)
             {
-                index = knownIndex;
-            }
-            else
-            {
-                index = innerList.LastIndexOf((T)item);
+                indexMap.Clear();
+                return;
             }
 
-            if (index >= 0)
+            // Reconstruir el índice tras el borrado del vanilla. Un prefix que borraba él mismo
+            // dejaba el ítem sin `holdingOwner = null` y sin `NotifyRemoved` (el objeto quedaba
+            // "atrapado": re-añadirlo saltaba "already in another container"). Ejecutamos DESPUÉS
+            // del vanilla, que ya hizo esos efectos secundarios.
+            indexMap.Clear();
+            for (int i = 0; i < innerList.Count; i++)
             {
-                // Remove fast
-                innerList.RemoveAt(index);
-                indexMap.Remove(thingID);
-
-                // Update moved element's index if necessary
-                if (index < innerList.Count && innerList[index] != null)
-                {
-                    indexMap.GetOrAdd(innerList[index].thingIDNumber) = index;
-                }
-
-                __result = true;
-                return false; // Skip original method
+                Thing item = innerList[i];
+                if (item != null)
+                    indexMap.GetOrAdd(item.thingIDNumber) = i;
             }
-
-            __result = false;
-            return false;
         }
     }
 }

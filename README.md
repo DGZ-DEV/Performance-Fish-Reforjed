@@ -8,8 +8,8 @@
 > estilo "Performance Fish", escrita específicamente para esta versión: sin código de mods
 > antiguos, sin métodos obsoletos, verificada contra el `Assembly-CSharp` de **1.6.9655**.
 
-**EN:** 53 IL rewrites + 12 runtime hooks targeting the CPU hotspots (comps, thing lists, buildings, gas, storage, production and medicine).
-**ES:** 53 reescrituras de IL + 12 enganches de runtime que atacan los puntos calientes de CPU (comps, listas de cosas, edificios, gas, almacenamiento, producción y medicina).
+**EN:** 32 IL rewrites + 5 active runtime hooks + 7 disabled/not-wired (reverted to vanilla after the 2026-10-05 review, see PARCHES.md) targeting the CPU hotspots (comps, thing lists, buildings, storage, world pawns).
+**ES:** 32 reescrituras de IL + 5 enganches de runtime activos + 7 desactivados/no conectados (revertidos a vanilla tras la revisión de 2026-10-05, ver PARCHES.md) que atacan los puntos calientes de CPU (comps, listas de cosas, edificios, almacenamiento, pawns del mundo).
 
 ---
 
@@ -45,16 +45,14 @@
 **EN:** Quick summary of what you notice in a large colony (mid/late game):
 **ES:** Resumen rápido de lo que se nota en una colonia grande (media/late game):
 
-- **EN:** Less stutter when switching tasks and assigning production jobs.
-  **ES:** Menos tartamudeo al cambiar de tarea y al asignar trabajos de producción.
+- **EN:** Less stutter when assigning production jobs (def/comp caches).
+  **ES:** Menos tartamudeo al asignar trabajos de producción (caches de defs/comps).
 - **EN:** Smoother hauling (storage cell search and per-cell item counting).
   **ES:** Acarreo más fluido (búsqueda de celdas de almacén y conteo de objetos por celda).
-- **EN:** Smoother gas combat (parallel 64-bit gas grids).
-  **ES:** Combates con gas más fluidos (grids de gas paralelos de 64 bits).
 - **EN:** Faster responses when inspecting objects, opening storage menus and using the world tab.
   **ES:** Respuestas más rápidas al inspeccionar objetos, abrir menús de almacenamiento y gestionar la pestaña de mundo.
-- **EN:** Lighter medicine/diagnosis (cached medical categories and hediffs).
-  **ES:** Medicina y diagnóstico más ligeros (categorías médicas y hediffs cacheados).
+- **EN:** Gas and world-object ticking are **exactly vanilla** since the 2026-10-05 review (the optimized versions had gameplay bugs: frozen gas and frozen caravans). Everything else keeps the vanilla behavior too: no rewrite changes how the game plays, only how fast it answers.
+  **ES:** El gas y el tick de objetos de mundo son **exactamente vanilla** desde la revisión de 2026-10-05 (las versiones optimizadas tenían bugs de gameplay: gas congelado y caravanas congeladas). El resto también conserva el comportamiento vanilla: ninguna reescritura cambia cómo juega, solo la rapidez de respuesta.
 
 ---
 
@@ -71,14 +69,17 @@
 **ES:** Y dentro de la marca deben aparecer **todos** los contadores con sus valores esperados y **ningún `Failed` mayor que 0**:
 
 ```
-gettersRewritten=4 | compPatches=11/11 | listerPatches=6/6 | buildingPatches=7/7 |
-gridPatches=1/1 | storagePatches=2/2 | slotGroupPatches=3/3 | roomPatches=1/1 |
-worldPawnsPatches=3/3 | worldObjectsHolderPatches=1/1 | gasGridPatches=6/6 |
-workGiverPatches=8/8
+gettersRewritten=4 | compPatches=9/9 | listerPatches=6/6 | buildingPatches=7/7 |
+gridPatches=1/1 | storagePatches=2/2 | slotGroupPatches=0/0 | roomPatches=1/1 |
+worldPawnsPatches=2/2 | worldObjectsHolderPatches=0/0 | gasGridPatches=0/0 |
+workGiverPatches=0/0
 ```
 
 **EN:** If any counter shows `0/N` or `Failed>0`, your RimWorld version differs from the verified one (1.6.9655): the game keeps working with vanilla behavior in those spots, but those optimizations are disabled.
 **ES:** Si algún contador aparece como `0/N` o con `Failed>0`, tu versión de RimWorld no coincide con la verificada (1.6.9655): el juego sigue funcionando con comportamiento vanilla en esos puntos, pero esas optimizaciones quedan desactivadas.
+
+> **EN:** Groups deliberately at `0/0` (slotGroup, worldObjectsHolder, gasGrid, workGiver) are **by design**, not a version mismatch: they were removed/reverted in the 2026-10-05 review because they either had gameplay bugs or gained nothing. See PARCHES.md.
+> **ES:** Los grupos deliberadamente en `0/0` (slotGroup, worldObjectsHolder, gasGrid, workGiver) son **por diseño**, no un desajuste de versión: se quitaron/revirtieron en la revisión de 2026-10-05 porque tenían bugs de gameplay o no aportaban nada. Ver PARCHES.md.
 
 ---
 
@@ -123,5 +124,5 @@ PARCHES.md             Point-by-point patch catalog / Catálogo punto por punto 
 
 ## License / Licencia
 
-**EN:** Reforjed series project (author: DGZ). Free to use for study and modding; attribution appreciated. The original Performance Fish license (MPL-2.0) applies to the parts derived from it — see CREDITS.md.
-**ES:** Proyecto de la serie **Reforjed** (autor: DGZ). Uso libre para fines de estudio y modding; atribución apreciada. La licencia del Performance Fish original (MPL-2.0) aplica a las partes derivadas de él — ver CREDITS.md.
+**EN:** Reforjed series project (author: DGZ). The files listed in **PARCHES.md** that are derived from the original Performance Fish (by bradson) are **Modifications under the Mozilla Public License 2.0** and carry the MPL-2.0 header; the original license text is in `LICENSE-original.txt`. Everything else is free to use for study and modding; attribution appreciated.
+**ES:** Proyecto de la serie **Reforjed** (autor: DGZ). Los archivos listados en **PARCHES.md** que derivan del Performance Fish original (de bradson) son **Modificaciones bajo la Mozilla Public License 2.0** y llevan el encabezado de la MPL-2.0; el texto de la licencia original está en `LICENSE-original.txt`. El resto es de uso libre para fines de estudio y modding; se agradece la atribución.

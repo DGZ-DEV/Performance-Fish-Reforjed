@@ -1,3 +1,10 @@
+// This file is a Modification (MPL-2.0, section 1.10) of the original
+// Performance Fish by bradson (https://github.com/bbradson/Performance-Fish),
+// which is covered by the Mozilla Public License 2.0.
+//
+// This Source Code Form is subject to the terms of the Mozilla Public
+// License, v. 2.0. If a copy of the MPL was not distributed with this
+// file, You can obtain one at https://mozilla.org/MPL/2.0/.
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
@@ -46,18 +53,27 @@ namespace PerformanceFishReforjed.Prepatch
 
             ModifyAllTypes(module);
             AddAttributes(module);
-            DefStatCachePrepatch.Apply(module);
-            GetCompCachingPrepatch.Apply(module);
-            ListerThingsPrepatch.Apply(module);
-            ListerBuildingsPrepatch.Apply(module);
-            GridsUtilityPrepatch.Apply(module);
-            StorageSettingsPrepatch.Start(module);
-            StoreUtilitySlotGroupPrepatch.Start(module);
-            RoomPrepatch.Apply(module);
-            WorldPawnsPrepatch.Apply(module);
-            WorldObjectsHolderPrepatch.Apply(module);
-            GasGridPrepatch.Apply(module);
-            WorkGiver_DoBillPrepatch.Apply(module);
+
+            // Hallazgo L3: cada grupo consulta PrepatchConfig (ajustes leidos del XML en esta fase,
+            // antes de que exista el Mod del juego) y se salta entero si el jugador lo desactivo.
+            // Un grupo desactivado deja sus contadores en 0/0 en la marca, igual que uno que no
+            // existe en esta version de Assembly-CSharp.
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableDefStatCache"))
+                DefStatCachePrepatch.Apply(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableGetCompCaching"))
+                GetCompCachingPrepatch.Apply(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableListerThings"))
+                ListerThingsPrepatch.Apply(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableListerBuildings"))
+                ListerBuildingsPrepatch.Apply(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableGridsUtility"))
+                GridsUtilityPrepatch.Apply(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableStorageSettings"))
+                StorageSettingsPrepatch.Start(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableRoom"))
+                RoomPrepatch.Apply(module);
+            if (!PrepatchConfig.IsGroupDisabled("prepatchDisableWorldPawns"))
+                WorldPawnsPrepatch.Apply(module);
         }
 
         // ─── Reescritura de IL ───────────────────────────────────────────────────────
