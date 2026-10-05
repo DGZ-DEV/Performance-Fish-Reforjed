@@ -58,10 +58,15 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 - **`object.GetType` / `Type.get_Assembly` / `Log.Error`** → transpilers de diagnóstico, inertes para nosotros.
 - Conflictos de "ambos mods de rendimiento": DP usa *profiling only*, no altera comportamiento; Reforjed no mide, solo optimiza. **Coexisten y se complementan.**
 
-### 5. CombatExtended — DEV BUILD (crítico)
-- La carpeta NO contiene un `CombatExtended.dll` cargable: solo el **loader dev** (3KB, muestra "Running uncompiled") + el código fuente. **El `CombatExtended.dll` (832KB) está solo en `Source\packages\` como referencia, no compilado para cargar.**
-- Implicación: con esta copia, CE **ni siquiera carga en el juego** (dev build pide compilarse). La compatibilidad real es imposible de verificar contra un DLL ejecutable aquí.
-- Verificación: el IL descompilado está en `Source\packages\CombatExtended.dll` (metadata rota, no se pudo descompilar completo). PENDIENTE de compilar el source.
+### 5. CombatExtended (`CETeam.CombatExtended`) — VERIFICADO con la build cargable
+- Trabaja con la build **cargable** en `Combat Extended\Assemblies\CombatExtended.dll` (1.3 MB, ~28/6/2026). Se descompiló por completo (2.6 MB de código) y se extrajeron **113** targets `[HarmonyPatch]`.
+- **Solapamiento con la superficie del Reforjed: NINGUNO directo.**
+  - `ListerThings.EverListable` → CE. Reforjed reescribe `ListerThings.Add/Remove/Contains/Clear/GetThingsOfType` (métodos distintos); `EverListable` no choca.
+  - `MassUtility.Capacity` → CE (y VEF). Reforjed parchea `MassUtility.GearMass`/`InventoryMass` (distintos).
+  - `ThingDef.PostLoad` / `ThingDef.SpecialDisplayStats` → CE. Reforjed cachea `BaseMarketValue/BaseMass/BaseFlammability/BaseMaxHitPoints` (distintos métodos).
+  - `Game.LoadGame`/`Game.ExposeData` → CE. Reforjed usa `Game.FinalizeInit` (hook distinto).
+  - No toca `HediffSet.DirtyCache`, `WorkGiver_DoBill`, `GasGrid`, `StorageSettings`, `StoreUtility`, `WorldObjectsHolder`, `GridsUtility.GetItemCount`, `SlotGroup`.
+- Las reescrituras de IL del Reforjed coexisten con los Harmony patches de CE (envuelven el método final). Compatibilidad total.
 
 ### 6. Dubs Mint Menus (`Dubwise.DubsMintMenus`)
 - UI: `HealthCardUtility.DrawPawnHealthCard`, `Listing_TreeThingFilter`, `MainTabsRoot`, `BillStack.DoListing`, `ResourceReadout`, etc. **Ninguno coincide con la superficie del Reforjed.** Compatibilidad total.
@@ -151,7 +156,7 @@ cuerpo y el Harmony patch no compiten. La capa de compatibilidad garantiza:
 | Vehicle-Framework | Sí | Verificar cadena `GearMass`/`InventoryMass` ← `GearAndInventoryMass` |
 | PickUpAndHaul | Sí | Ninguna (métodos distintos) |
 | Dubs PA | Sí | Cargar antes; Medir versiones cacheadas (mejora) |
-| CombatExtended | ⚠️ DEV | No cargable; esperar versión compilada |
+| CombatExtended | Sí | Verificada con build cargable (113 patches, sin solapamiento directo) |
 | Dubs Mint Menus | Sí | Ninguna |
 | RimHUD | Sí | `Game.FinalizeInit` postfix apilado, OK |
 | Achtung! | Sí | Ninguna |
