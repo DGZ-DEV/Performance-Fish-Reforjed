@@ -22,14 +22,14 @@ with Performance Fish Reforjed** and with what caveat.
 | Dubs Performance Analyzer | `Dubwise.DubsPerformanceAnalyzer` | ✅ | Profiling only; mide las versiones cacheadas (mejora). |
 | Combat Extended | `CETeam.CombatExtended` | ✅ | Build cargable verificada (113 HarmonyPatch, sin solapamiento directo). |
 | Dubs Mint Menus | `Dubwise.DubsMintMenus` | ✅ | UI pura. |
-| RimHUD | `Jaxe.RimHUD` | ✅ | `Game.FinalizeInit` postfix apilado sin conflicto. |
+| RimHUD | `Jaxe.RimHUD` | ✅ | `Game.FinalizeInit` postfix apilado sin conflicto. *(Requiere copia completa del mod con `Assemblies`, no solo el repo fuente.)* |
 | Achtung! | `brrainz.achtung` | ⛔ Desactivado | Trae su propio `0Harmony v1.2.0.1` viejo que no resuelve `Harmony.CodeInstruction` en la pila actual (2.x). Por desactualizado se desactivó; no afecta al Reforjed. |
-| AllowTool | `UnlimitedHugs.AllowTool` | ✅ | UI / designadores. |
+| AllowTool | `UnlimitedHugs.AllowTool` | ✅ | UI / designadores. *(Requiere copia completa: `Mods\AllowTool` con `Assemblies`.)* |
 | Character Editor | `void.charactereditor` | ✅ | UI de edición (editor abierto). |
-| HugsLib | `UnlimitedHugs.HugsLib` | ✅ | Librería; sin hotspots propios. |
-| VanillaVehiclesExpanded | `OskarPotocki.VanillaVehiclesExpanded` | ✅ | Depende de Vehicle-Framework. |
+| HugsLib | `UnlimitedHugs.HugsLib` | ✅ | Librería; sin hotspots propios. *(Requiere copia completa: `Mods\HugsLib` con `Assemblies`.)* |
+| VanillaVehiclesExpanded | `OskarPotocki.VanillaVehiclesExpanded` | ✅ | Depende de Vehicle-Framework. Usar la versión Steam estable (24-mar), no la de desarrollo del repo (28-may) que requiere `CoreLib.dll`. |
 | Slower Pawn Tick Rate | `Arkymn.SlowerPawnTickRate` | ✅ | Tick rates distintos de los nuestros. |
-| MissileGirl | `vr.missilegirl` | ⚠️ | Comparte `HediffSet.DirtyCache` (postfix + postfix se apilan, verificado seguro); orden revisado. |
+| MissileGirl | `vr.missilegirl` | ✅ | Reforjed ya **no** reescribe `WorldPawns.DefPreventingMothball` (MissileGirl le aplica un transpiler); comparte `HediffSet.DirtyCache` (postfix + postfix apilados, seguro). |
 | kNumbers | `koisama.numbers` | ➖ | "Numbers" 0.16, inerte en 1.6; sin superficie. |
 
 ---
@@ -47,6 +47,29 @@ with Performance Fish Reforjed** and with what caveat.
    Each mod can be disabled individually in settings → "Compatibility details".
 4. **Optimización condicional implementada:** Combat Extended `CompInventory.AmmoCountOfDef`
    (LINQ → bucle) se activa solo si CE está presente. Conditional optimization implemented.
+
+---
+
+## Avisos que parecen errores (no lo son) / Warnings that look like errors (they aren't)
+
+Aparecen en el `Player.log` con o sin nuestro mod; **no son fallos** y no los genera
+PerformanceFish Reforjed.
+
+These appear in `Player.log` with or without our mod; **they are not failures** and are
+not produced by Performance Fish Reforjed.
+
+| Aviso / Warning | ¿Fallo? | Qué es realmente |
+|---|---|---|
+| `Config error in CE_Apparel_*: description has trailing whitespace` | No | Aviso de **CE** (/Combat Extended): sus Defs de ropa tienen **espacios en blanco al final de la línea** en `description`. El juego solo los recorta. Cosmético, no rompe nada. |
+| `Failed Allocations. Bucket layout: ...` | No | Estadística interna del **administrador de memoria de Unity** al cerrar la partida. Es un informe de uso, no un crash. |
+| `Translation data for language Spanish has 395 errors` | No | Errores de **traducción al español** (vanilla/mods). Ajeno a nuestro mod. |
+| `FMOD failed to initialize any audio devices` | No | No hay dispositivo/salida de audio activo. Hardware, no software. |
+
+> Los avisos de `trailing whitespace` de CE aparecen **aunque CE esté actualizado** porque son
+> propios de los archivos de Def de CE, no una versión concreta. Se pueden ignorar.
+>
+> The CE `trailing whitespace` warnings appear **even when CE is up to date** because they
+> originate from CE's own Def files, not from any specific version. They are safe to ignore.
 
 ---
 
