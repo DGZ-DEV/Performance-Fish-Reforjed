@@ -25,9 +25,9 @@
       <steamWorkshopUrl>steam://url/CommunityFilePage/2934420800</steamWorkshopUrl>
     </li>
   </modDependencies>
-  <description>Reimplementacion para RimWorld 1.6 de las optimizaciones de Performance Fish, escrita desde cero por la serie Reforjed.
+  <description>A from-scratch reimplementation for RimWorld 1.6 of the optimizations from the original Performance Fish mod, written by the Reforjed series.
 
-Toma como referencia el catalogo de optimizaciones de Performance Fish (bradson, github.com/bbradson/Performance-Fish) pero reescribe el codigo contra las APIs vigentes de 1.6 y sustituye los metodos obsoletos o eliminados. Codigo propio, creditos al original en CREDITS.md.
+It takes the optimization catalog of Performance Fish (bradson, github.com/bbradson/Performance-Fish) as a reference, but rewrites the code against the current 1.6 APIs, replacing obsolete or removed methods. Original code; credit to the original author in CREDITS.md.
 
-Requiere Harmony y Prepatcher.</description>
+Requires Harmony and Prepatcher.</description>
 </ModMetaData>

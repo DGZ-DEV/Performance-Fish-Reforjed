@@ -34,11 +34,11 @@ namespace PerformanceFishReforjed
             var listing = new Listing_Standard();
             listing.Begin(inRect);
 
-            listing.CheckboxLabeled("Registro en el log", ref PerformanceFishReforjedSettings.EnableInternalLogging,
-                "Escribe lineas de diagnostico del mod en la consola del juego al cargar alguno de sus parches.");
+            listing.CheckboxLabeled("Log messages", ref PerformanceFishReforjedSettings.EnableInternalLogging,
+                "Write mod diagnostics to the in-game console when its patches are applied.");
 
             listing.Gap(8f);
-            listing.Label($"Marca de prepatching: {ReadStamp() ?? "no encontrada"}");
+            listing.Label($"Prepatch stamp: {ReadStamp() ?? "not found"}");
 
             listing.End();
         }
@@ -54,12 +54,12 @@ namespace PerformanceFishReforjed
 
             if (stamp == null)
             {
-                Log.Warning("[PerformanceFishReforjed] No se encontro la marca de prepatching en Assembly-CSharp. " +
-                            "El motor no se ejecuto: comprueba que Prepatcher (zetrith.prepatcher) este activo y el primero de la lista.");
+                Log.Warning("[PerformanceFishReforjed] Prepatch stamp not found in Assembly-CSharp. " +
+                            "The prepatch engine did not run: check that Prepatcher (zetrith.prepatcher) is enabled and first in the mod list.");
                 return;
             }
 
-            Log.Message($"[PerformanceFishReforjed] Motor de prepatching OK. Marca: {stamp}");
+            Log.Message($"[PerformanceFishReforjed] Prepatch engine OK. Stamp: {stamp}");
         }
 
         /// <summary>
@@ -75,7 +75,7 @@ namespace PerformanceFishReforjed
             }
             catch (Exception e)
             {
-                Log.Warning($"[PerformanceFishReforjed] Error leyendo la marca de prepatching: {e.Message}");
+                Log.Warning($"[PerformanceFishReforjed] Error reading the prepatch stamp: {e.Message}");
                 return null;
             }
         }

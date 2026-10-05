@@ -338,9 +338,9 @@ namespace PerformanceFishReforjed.Caching
             if (!PerformanceFishReforjedSettings.EnableInternalLogging)
                 return;
 
-            Log.ErrorOnce($"[PerformanceFishReforjed] Los indices de edificios no cuadran con las listas del " +
-                          $"juego (detectado en {what}): las consultas de edificios estan usando el recorrido " +
-                          $"normal (correctas, pero sin ganancia). Pulsa «Autocomprobar indices de ListerBuildings».",
+            Log.ErrorOnce($"[PerformanceFishReforjed] Building indexes do not match the game lists " +
+                          $"(detected in {what}): building queries are using the normal scan " +
+                          $"(correct, but without the speedup). Use the settings page self-check for details.",
                           FallbackWarningKey);
         }
 

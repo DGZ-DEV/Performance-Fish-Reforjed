@@ -36,15 +36,15 @@ namespace PerformanceFishReforjed.Caching
             MethodInfo? target = AccessTools.Method(typeof(Game), nameof(Game.FinalizeInit));
             if (target == null)
             {
-                Log.Error("[PerformanceFishReforjed] No se encontro Game.FinalizeInit: las caches de comps " +
-                          "NO se vaciaran al cambiar de partida.");
+                Log.Error("[PerformanceFishReforjed] Game.FinalizeInit not found: comp caches " +
+                          "will NOT be cleared when switching games.");
                 return;
             }
 
             MethodInfo? postfix = AccessTools.Method(typeof(CacheLifecycle), nameof(OnGameFinalizeInit));
             if (postfix == null)
             {
-                Log.Error("[PerformanceFishReforjed] No se encontro el postfix de limpieza de caches.");
+                Log.Error("[PerformanceFishReforjed] Cache-clearing postfix not found.");
                 return;
             }
 
@@ -53,11 +53,11 @@ namespace PerformanceFishReforjed.Caching
                 PerformanceFishReforjedMod.HarmonyInstance.Patch(target, postfix: new HarmonyMethod(postfix));
 
                 if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                    Log.Message("[PerformanceFishReforjed] Limpieza de caches enganchada a Game.FinalizeInit.");
+                    Log.Message("[PerformanceFishReforjed] Cache clearing hooked to Game.FinalizeInit.");
             }
             catch (Exception e)
             {
-                Log.Error($"[PerformanceFishReforjed] Fallo al parchear Game.FinalizeInit: {e}");
+                Log.Error($"[PerformanceFishReforjed] Failed to patch Game.FinalizeInit: {e}");
             }
 
             ApplyListerBuildingsPostfixes();
@@ -90,11 +90,11 @@ namespace PerformanceFishReforjed.Caching
                             postfix: new HarmonyMethod(postfixExpose));
 
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Persistencia optimizada enganchada a GasGrid.ExposeData.");
+                            Log.Message("[PerformanceFishReforjed] Optimized persistence hooked to GasGrid.ExposeData.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear GasGrid.ExposeData: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch GasGrid.ExposeData: {e}");
                     }
                 }
             }
@@ -135,8 +135,8 @@ namespace PerformanceFishReforjed.Caching
 
             if (target == null)
             {
-                Log.Error("[PerformanceFishReforjed] No se encontro StoreUtility.NoStorageBlockersIn: el atajo de " +
-                          "bloqueantes no se aplicara.");
+                Log.Error("[PerformanceFishReforjed] StoreUtility.NoStorageBlockersIn not found: the " +
+                          "storage-blocker shortcut will not be applied.");
                 return;
             }
 
@@ -145,7 +145,7 @@ namespace PerformanceFishReforjed.Caching
 
             if (prefix == null)
             {
-                Log.Error("[PerformanceFishReforjed] No se encontro el prefijo de bloqueantes.");
+                Log.Error("[PerformanceFishReforjed] Storage-blocker prefix not found.");
                 return;
             }
 
@@ -154,11 +154,11 @@ namespace PerformanceFishReforjed.Caching
                 PerformanceFishReforjedMod.HarmonyInstance.Patch(target, prefix: new HarmonyMethod(prefix));
 
                 if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                    Log.Message("[PerformanceFishReforjed] Atajo de bloqueantes enganchado a StoreUtility.NoStorageBlockersIn.");
+                    Log.Message("[PerformanceFishReforjed] Storage-blocker shortcut hooked to StoreUtility.NoStorageBlockersIn.");
             }
             catch (Exception e)
             {
-                Log.Error($"[PerformanceFishReforjed] Fallo al parchear StoreUtility.NoStorageBlockersIn: {e}");
+                Log.Error($"[PerformanceFishReforjed] Failed to patch StoreUtility.NoStorageBlockersIn: {e}");
             }
         }
 
@@ -169,15 +169,15 @@ namespace PerformanceFishReforjed.Caching
 
             if (target == null)
             {
-                Log.Error($"[PerformanceFishReforjed] No se encontro ThingGrid.{methodName}(Thing, IntVec3): el " +
-                          $"{cacheType.Name} no se mantendra.");
+                Log.Error($"[PerformanceFishReforjed] ThingGrid.{methodName}(Thing, IntVec3) not found: " +
+                          $"{cacheType.Name} will not be maintained.");
                 return;
             }
 
             MethodInfo? postfix = AccessTools.Method(cacheType, postfixName);
             if (postfix == null)
             {
-                Log.Error($"[PerformanceFishReforjed] No se encontro el postfijo {postfixName} en {cacheType.Name}.");
+                Log.Error($"[PerformanceFishReforjed] Postfix {postfixName} not found on {cacheType.Name}.");
                 return;
             }
 
@@ -186,11 +186,11 @@ namespace PerformanceFishReforjed.Caching
                 PerformanceFishReforjedMod.HarmonyInstance.Patch(target, postfix: new HarmonyMethod(postfix));
 
                 if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                    Log.Message($"[PerformanceFishReforjed] {cacheType.Name} enganchado a ThingGrid.{methodName}.");
+                    Log.Message($"[PerformanceFishReforjed] {cacheType.Name} hooked to ThingGrid.{methodName}.");
             }
             catch (Exception e)
             {
-                Log.Error($"[PerformanceFishReforjed] Fallo al parchear ThingGrid.{methodName} con {cacheType.Name}.{postfixName}: {e}");
+                Log.Error($"[PerformanceFishReforjed] Failed to patch ThingGrid.{methodName} with {cacheType.Name}.{postfixName}: {e}");
             }
         }
 
@@ -233,11 +233,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetNotify, postfix: new HarmonyMethod(postfixNotify));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Cache AllowedToAccept enganchada a StorageSettings.TryNotifyChanged.");
+                            Log.Message("[PerformanceFishReforjed] AllowedToAccept cache hooked to StorageSettings.TryNotifyChanged.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear StorageSettings.TryNotifyChanged: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch StorageSettings.TryNotifyChanged: {e}");
                     }
                 }
             }
@@ -253,11 +253,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetPriority, postfix: new HarmonyMethod(postfixPriority));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Cache AllowedToAccept enganchada a StorageSettings.set_Priority.");
+                            Log.Message("[PerformanceFishReforjed] AllowedToAccept cache hooked to StorageSettings.set_Priority.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear StorageSettings.set_Priority: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch StorageSettings.set_Priority: {e}");
                     }
                 }
             }
@@ -286,11 +286,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetSpawn, postfix: new HarmonyMethod(postfixSpawn));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageBlockerGrid enganchado a Building.SpawnSetup.");
+                            Log.Message("[PerformanceFishReforjed] StorageBlockerGrid hooked to Building.SpawnSetup.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear Building.SpawnSetup: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch Building.SpawnSetup: {e}");
                     }
                 }
             }
@@ -310,11 +310,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetDespawn, prefix: new HarmonyMethod(prefixDespawn));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageBlockerGrid enganchado a Building.DeSpawn (prefix).");
+                            Log.Message("[PerformanceFishReforjed] StorageBlockerGrid hooked to Building.DeSpawn (prefix).");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear Building.DeSpawn (prefix): {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch Building.DeSpawn (prefix): {e}");
                     }
                 }
 
@@ -326,11 +326,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetDespawn, postfix: new HarmonyMethod(postfixDespawn));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageBlockerGrid enganchado a Building.DeSpawn (postfix).");
+                            Log.Message("[PerformanceFishReforjed] StorageBlockerGrid hooked to Building.DeSpawn (postfix).");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear Building.DeSpawn (postfix): {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch Building.DeSpawn (postfix): {e}");
                     }
                 }
             }
@@ -343,15 +343,15 @@ namespace PerformanceFishReforjed.Caching
 
             if (target == null)
             {
-                Log.Error($"[PerformanceFishReforjed] No se encontro ListerBuildings.{methodName}(Building): los " +
-                          $"indices de edificios no se mantenendran (las consultas caeran al recorrido normal).");
+                Log.Error($"[PerformanceFishReforjed] ListerBuildings.{methodName}(Building) not found: " +
+                          $"building indexes will not be maintained (queries will fall back to the normal scan).");
                 return;
             }
 
             MethodInfo? postfix = AccessTools.Method(typeof(Caching.ListerBuildingsCaches), postfixName);
             if (postfix == null)
             {
-                Log.Error($"[PerformanceFishReforjed] No se encontro el postfijo {postfixName}.");
+                Log.Error($"[PerformanceFishReforjed] Postfix {postfixName} not found.");
                 return;
             }
 
@@ -360,11 +360,11 @@ namespace PerformanceFishReforjed.Caching
                 PerformanceFishReforjedMod.HarmonyInstance.Patch(target, postfix: new HarmonyMethod(postfix));
 
                 if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                    Log.Message($"[PerformanceFishReforjed] Indice de edificios enganchado a ListerBuildings.{methodName}.");
+                    Log.Message($"[PerformanceFishReforjed] Building index hooked to ListerBuildings.{methodName}.");
             }
             catch (Exception e)
             {
-                Log.Error($"[PerformanceFishReforjed] Fallo al parchear ListerBuildings.{methodName}: {e}");
+                Log.Error($"[PerformanceFishReforjed] Failed to patch ListerBuildings.{methodName}: {e}");
             }
         }
 
@@ -389,11 +389,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetAdded, postfix: new HarmonyMethod(postfixAdded));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] SlotGroupCapacityCache enganchado a SlotGroup.Notify_AddedCell.");
+                            Log.Message("[PerformanceFishReforjed] SlotGroupCapacityCache hooked to SlotGroup.Notify_AddedCell.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear SlotGroup.Notify_AddedCell: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch SlotGroup.Notify_AddedCell: {e}");
                     }
                 }
             }
@@ -410,11 +410,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetLost, postfix: new HarmonyMethod(postfixLost));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] SlotGroupCapacityCache enganchado a SlotGroup.Notify_LostCell.");
+                            Log.Message("[PerformanceFishReforjed] SlotGroupCapacityCache hooked to SlotGroup.Notify_LostCell.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear SlotGroup.Notify_LostCell: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch SlotGroup.Notify_LostCell: {e}");
                     }
                 }
             }
@@ -431,11 +431,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetWorker, prefix: new HarmonyMethod(prefixWorker));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Atajo de capacidad enganchado a StoreUtility.TryFindBestBetterStoreCellForWorker.");
+                            Log.Message("[PerformanceFishReforjed] Capacity shortcut hooked to StoreUtility.TryFindBestBetterStoreCellForWorker.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear StoreUtility.TryFindBestBetterStoreCellForWorker: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch StoreUtility.TryFindBestBetterStoreCellForWorker: {e}");
                     }
                 }
             }
@@ -461,11 +461,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetMemberRemoved, postfix: new HarmonyMethod(postfixMemberRemoved));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageGroupCapacityCache enganchado a StorageGroup.RemoveMember.");
+                            Log.Message("[PerformanceFishReforjed] StorageGroupCapacityCache hooked to StorageGroup.RemoveMember.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear StorageGroup.RemoveMember: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch StorageGroup.RemoveMember: {e}");
                     }
                 }
             }
@@ -482,11 +482,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetSettingsChanged, postfix: new HarmonyMethod(postfixSettingsChanged));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] StorageGroupCapacityCache enganchado a StorageGroup.Notify_SettingsChanged.");
+                            Log.Message("[PerformanceFishReforjed] StorageGroupCapacityCache hooked to StorageGroup.Notify_SettingsChanged.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear StorageGroup.Notify_SettingsChanged: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch StorageGroup.Notify_SettingsChanged: {e}");
                     }
                 }
             }
@@ -514,11 +514,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetGearMass, prefix: new HarmonyMethod(prefixGearMass), postfix: new HarmonyMethod(postfixGearMass));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Caché de masa enganchada a MassUtility.GearMass.");
+                            Log.Message("[PerformanceFishReforjed] Mass cache hooked to MassUtility.GearMass.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear MassUtility.GearMass: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch MassUtility.GearMass: {e}");
                     }
                 }
             }
@@ -537,11 +537,11 @@ namespace PerformanceFishReforjed.Caching
                     {
                         PerformanceFishReforjedMod.HarmonyInstance.Patch(targetInventoryMass, prefix: new HarmonyMethod(prefixInventoryMass), postfix: new HarmonyMethod(postfixInventoryMass));
                         if (PerformanceFishReforjedSettings.EnableInternalLogging)
-                            Log.Message("[PerformanceFishReforjed] Caché de masa enganchada a MassUtility.InventoryMass.");
+                            Log.Message("[PerformanceFishReforjed] Mass cache hooked to MassUtility.InventoryMass.");
                     }
                     catch (Exception e)
                     {
-                        Log.Error($"[PerformanceFishReforjed] Fallo al parchear MassUtility.InventoryMass: {e}");
+                        Log.Error($"[PerformanceFishReforjed] Failed to patch MassUtility.InventoryMass: {e}");
                     }
                 }
             }
@@ -555,8 +555,8 @@ namespace PerformanceFishReforjed.Caching
 
             if (PerformanceFishReforjedSettings.EnableInternalLogging)
             {
-                Log.Message($"[PerformanceFishReforjed] Caches vaciadas al cargar partida " +
-                            $"(limpieza n.º {ClearCount}, {CacheRegistry.Count} caches registradas).");
+                Log.Message($"[PerformanceFishReforjed] Caches cleared on game load " +
+                            $"(clearing #{ClearCount}, {CacheRegistry.Count} caches registered).");
             }
         }
     }
