@@ -23,7 +23,7 @@ with Performance Fish Reforjed** and with what caveat.
 | Combat Extended | `CETeam.CombatExtended` | ✅ | Build cargable verificada (113 HarmonyPatch, sin solapamiento directo). |
 | Dubs Mint Menus | `Dubwise.DubsMintMenus` | ✅ | UI pura. |
 | RimHUD | `Jaxe.RimHUD` | ✅ | `Game.FinalizeInit` postfix apilado sin conflicto. |
-| Achtung! | `brrainz.achtung` | ✅ | Trabajo/jobs/UI; sin tocar la superficie del Reforjed. |
+| Achtung! | `brrainz.achtung` | ⛔ Desactivado | Trae su propio `0Harmony v1.2.0.1` viejo que no resuelve `Harmony.CodeInstruction` en la pila actual (2.x). Por desactualizado se desactivó; no afecta al Reforjed. |
 | AllowTool | `UnlimitedHugs.AllowTool` | ✅ | UI / designadores. |
 | Character Editor | `void.charactereditor` | ✅ | UI de edición (editor abierto). |
 | HugsLib | `UnlimitedHugs.HugsLib` | ✅ | Librería; sin hotspots propios. |
