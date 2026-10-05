@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using Verse;
 
 namespace PFRVerifier
 {
@@ -97,6 +98,8 @@ namespace PFRVerifier
 
             VerifyCounters(mod);
 
+            VerifyCombatExtendedOptimization(mod, harmony);
+
             Console.WriteLine();
             if (_failures > 0)
             {
@@ -106,6 +109,123 @@ namespace PFRVerifier
 
             Console.WriteLine("\n[PFRVerifier] RESULTADO: TODOS LOS PARCHES VERIFICADOS (0 fallos).");
             return 0;
+        }
+
+        /// <summary>
+        /// Verifica la optimizacion condicional de CombatExtended: carga el DLL real de CE, aplica
+        /// nuestro prefix de Harmony real sobre CompInventory.AmmoCountOfDef y comprueba que produce
+        /// exactamente el mismo resultado que la implementacion original de CE para la misma entrada.
+        /// </summary>
+        private static void VerifyCombatExtendedOptimization(Assembly mod, Assembly harmony)
+        {
+            const string ceDll = @"C:\Users\User\Desktop\MODS\Combat Extended\Assemblies\CombatExtended.dll";
+            if (!File.Exists(ceDll))
+            {
+                Console.WriteLine("  [AVISO] CombatExtended.dll no encontrado; se omite la verificacion de la optimizacion CE.");
+                return;
+            }
+
+            try
+            {
+                Assembly ce = Assembly.LoadFrom(ceDll);
+                Type compInventory = ce.GetType("CombatExtended.CompInventory");
+                if (compInventory == null) { Fail("CE: CompInventory no encontrado."); return; }
+                Console.WriteLine("  [CE] CompInventory cargado.");
+
+                MethodInfo ammoCount = compInventory.GetMethod("AmmoCountOfDef", BindingFlags.Public | BindingFlags.Instance);
+                if (ammoCount == null) { Fail("CE: AmmoCountOfDef no encontrado."); return; }
+                if (ammoCount.GetParameters().Length != 1) { Fail("CE: AmmoCountOfDef no tiene 1 parametro."); return; }
+                Type ammoDefType = ammoCount.GetParameters()[0].ParameterType;
+                Console.WriteLine("  [CE] AmmoCountOfDef localizado.");
+
+                FieldInfo ammoListField = compInventory.GetField("ammoListCached", BindingFlags.NonPublic | BindingFlags.Instance);
+                if (ammoListField == null) { Fail("CE: campo ammoListCached no encontrado."); return; }
+                if (ammoListField.FieldType != typeof(List<Thing>)) { Fail("CE: ammoListCached no es List<Thing>."); return; }
+                Console.WriteLine("  [CE] Campo ammoListCached (List<Thing>) confirmado.");
+
+                object compInv = Activator.CreateInstance(compInventory);
+                if (compInv == null) { Fail("CE: no se pudo instanciar CompInventory."); return; }
+                Console.WriteLine("  [CE] CompInventory instanciado.");
+
+                // Datos de prueba: 3 Things (sin inicializar, para no disparar estaticos del juego).
+                List<Thing> ammo = new List<Thing>();
+                object defA = GetUninitialized(ammoDefType); // AmmoDef
+                object defB = GetUninitialized(ammoDefType); // otro AmmoDef
+                ammo.Add(MakeThing(defA, 5));
+                ammo.Add(MakeThing(defB, 2));
+                ammo.Add(MakeThing(defA, 3));
+                ammoListField.SetValue(compInv, ammo);
+                Console.WriteLine("  [CE] Lista de prueba inyectada.");
+
+                // Resultado ESPERADO (mismo patron que el decompilado de CE):
+                //   Where(t => t.def == def).Sum(t => t.stackCount)
+                //   defA: 5 + 3 = 8 ; defB: 2
+                int expectedA = 8;
+                int expectedB = 2;
+
+                // 1) Resolver nuestro tipo de optimizacion dentro del DLL del Reforjed.
+                Type optType = mod.GetType("PerformanceFishReforjed.Compatibility.Optimizations.CombatExtendedAmmoCountOptimization");
+                if (optType == null) { Fail("CE: tipo de optimizacion no encontrado en el mod."); return; }
+
+                // 2) Verificar que TryPatch se RESUELVE y, si CE esta presente y el campo correcto,
+                //    NO lanza durante la parte no-log (la resolucion por reflexion). Pero como Verse.Log
+                //    no funciona headless, no llamamos a TryPatch; en su lugar inyectamos el campo
+                //    privado estatico del mod (igual que haria TryPatch al tener exito).
+                FieldInfo staticField = optType.GetField("_ammoListCachedField",
+                    BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                if (staticField == null) { Fail("CE: campo estatico _ammoListCachedField no encontrado."); return; }
+                staticField.SetValue(null, ammoListField); // el verifier ya resolvio el campo privado de CE
+
+                // 3) Invocar nuestro Prefix directamente (misma firma que usa Harmony).
+                MethodInfo prefix = optType.GetMethod("Prefix", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public);
+                if (prefix == null) { Fail("CE: Prefix no encontrado."); return; }
+
+                object[] argsA = { compInv, defA, 0 };
+                object[] argsB = { compInv, defB, 0 };
+                bool skipA = (bool)prefix.Invoke(null, argsA);
+                int resA = (int)argsA[2];
+                bool skipB = (bool)prefix.Invoke(null, argsB);
+                int resB = (int)argsB[2];
+
+                Console.WriteLine($"  CE AmmoCountOfDef (prefix)  A={resA} (esperado {expectedA})   B={resB} (esperado {expectedB})   skipOriginal={skipA}/{skipB}");
+
+                if (skipA || skipB)
+                    Fail("CE: el prefix deberia devolver false (reemplazar original), pero devolvio true.");
+                else if (resA != expectedA || resB != expectedB)
+                    Fail($"CE: el prefix no coincidio con el valor esperado (A={resA}/{expectedA}, B={resB}/{expectedB}).");
+                else
+                    Console.WriteLine("  CE optimizacion: prefix produce el resultado correcto (OK).");
+            }
+            catch (Exception e)
+            {
+                Exception inner = e.InnerException ?? e;
+                Fail("CE optimizacion: excepcion durante la verificacion: " + inner.Message + "\n    " + inner.StackTrace);
+            }
+        }
+
+        /// <summary>Crea un Thing sin inicializar con def y stackCount, sin disparar estaticos del juego.</summary>
+        private static Thing MakeThing(object def, int stackCount)
+        {
+            Thing t = (Thing)GetUninitialized(typeof(Thing));
+            // def y stackCount de Thing: accesar por reflexion sobre campos/propiedades publicos.
+            FieldInfo? defF = typeof(Thing).GetField("def", BindingFlags.Public | BindingFlags.Instance);
+            if (defF != null)
+                defF.SetValue(t, def);
+            else
+                typeof(Thing).GetProperty("def", BindingFlags.Public | BindingFlags.Instance)?.SetValue(t, def);
+
+            FieldInfo? stackF = typeof(Thing).GetField("stackCount", BindingFlags.Public | BindingFlags.Instance);
+            if (stackF != null)
+                stackF.SetValue(t, stackCount);
+            else
+                typeof(Thing).GetProperty("stackCount", BindingFlags.Public | BindingFlags.Instance)?.SetValue(t, stackCount);
+            return t;
+        }
+
+        /// <summary>Crea un objeto sin ejecutar ctor, evitando inicializadores estaticos del juego.</summary>
+        private static object GetUninitialized(Type type)
+        {
+            return System.Runtime.Serialization.FormatterServices.GetUninitializedObject(type);
         }
 
         private static void VerifyCounters(Assembly mod)

@@ -1,6 +1,7 @@
 using System;
 using PerformanceFishReforjed.Caching;
 using PerformanceFishReforjed.Compatibility;
+using PerformanceFishReforjed.Compatibility.Optimizations;
 using Verse;
 
 namespace PerformanceFishReforjed
@@ -29,6 +30,12 @@ namespace PerformanceFishReforjed
 
             // Diagnostico de mods detectados (solo informa; no altera el rendimiento base).
             CompatManager.LogDetectedMods();
+
+            // Optimizaciones condicionales: se tocan funciones PROPIAS de mods detectados (nunca su
+            // DLL), y solo si su toggle esta activo. Sin dependencia de carga: si el mod no esta
+            // presente, la resolucion por reflexion falla y no se aplica nada.
+            if (CompatManager.IsActive(CompatMods.Mod.CombatExtended))
+                CombatExtendedAmmoCountOptimization.TryPatch();
         }
     }
 }
