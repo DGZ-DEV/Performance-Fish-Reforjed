@@ -1,0 +1,34 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <!-- net472 no trae los facades netstandard 2.1 que necesita la reflection sobre Assembly-CSharp
+         1.6. Con .NET (Core) 8+ los tipos netstandard se resuelven de forma nativa. -->
+    <TargetFramework>net8.0</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <AssemblyName>PFRSim</AssemblyName>
+    <RootNamespace>PFRSim</RootNamespace>
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\bin\</OutputPath>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+    <RollForward>LatestMajor</RollForward>
+  </PropertyGroup>
+  <PropertyGroup>
+    <EnableLoadFromProjectReferences>true</EnableLoadFromProjectReferences>
+  </PropertyGroup>
+  <ItemGroup>
+    <!-- Mono.Cecil viene IL-merged en el 0Harmony de Prepatcher; MISMA fuente que usa el mod.
+         Se publiciza (Krafs.Publicizer) para poder usar Cecil directamente en lugar de reflexion. -->
+    <Reference Include="0Harmony">
+      <HintPath>C:\RimWorld\Mods\Prepatcher\Assemblies\0Harmony.dll</HintPath>
+    </Reference>
+    <!-- Assembly-CSharp real para los tipos Verse (ThingDef, IntVec3, ...) en compile-time. -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.2" PrivateAssets="all" />
+    <Publicize Include="0Harmony" />
+  </ItemGroup>
+</Project>

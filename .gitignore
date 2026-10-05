@@ -3,6 +3,7 @@ Source/obj/
 Source/bin/
 Tools/bin/
 Tools/Verifier/obj/
+Tools/Sim/obj/
 *.pdb
 
 # Logs y temporales
