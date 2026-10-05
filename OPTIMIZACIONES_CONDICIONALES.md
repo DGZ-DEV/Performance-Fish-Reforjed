@@ -107,3 +107,36 @@ toggle y verificarse por simulación antes de confiarlas a una build.
 
 El objetivo es que el Reforjed **siga funcionando si el mod objetivo no está instalado, cambia de
 versión, o el usuario desactiva la optimización**. Eso ya lo garantiza la capa existente.
+
+---
+
+## Estado de implementación (veredicto final por candidato)
+
+Decisión tomada siguiendo la disciplina del proyecto y la inspección real de los cuerpos de los
+métodos: **solo se reescribe lo que es genuinamente seguro y medible**. El patrón validado es un
+**prefix Harmony que devuelve `false` y escribe `__result`** (reemplaza el método), aplicable solo a
+métodos cortos y autocontenidos cuyas operaciones usan tipos de los que podemos depender (vanilla).
+Un **transpiler acotado** de LINQ interno también sería viable para métodos complejos, pero se
+desestimó por su fragilidad ante cambios de IL y su mayor riesgo de romper el mod ajeno.
+
+| Candidato | Método | Estado |
+|---|---|---|
+| CE `CompInventory.AmmoCountOfDef` | **Prefix** (`Where().Sum()` → loop manual sobre `List<Thing>`) | ✅ **IMPLEMENTADO** y verificado (commit `59eb864`) |
+| CE `JobGiver_CheckReload.DoReloadCheck` | método complejo, decenas de tipos CE internos | ⚠️ omitido (reescritura prefix impracticable sin tocar internals de CE) |
+| CE `FriendlyFireConeTargetScoreOffset` | targeting complejo, tipos CE internos | ⚠️ omitido (mismo motivo) |
+| CE `GetCoverPositionFrom` | método largo, collecciones + tipos CE | ⚠️ omitido |
+| CE `CompTacticalManager.CompTickInterval` | método void de tick extenso con `HashSet` local | ⚠️ omitido |
+| CE `JobGiver_UpdateLoadout` | complejo, materializa pawns del mapa | ⚠️ omitido |
+| VF `VehiclePawn.AllCapablePawns` | devuelve `List<Pawn>` pero exige reflexión por handler | ⚠️ omitido (ganancia neta dudosa vs costo de reflexión) |
+| CE `Loadout.Bulk`/`Weight` | dependen de `Slots` (LINQ encadenado) y tipos CE | ⚠️ omitido |
+
+### Nota sobre los 53 prepatches
+Cuando se cambió `TOTAL reescrituras` en el verifier se confirmó que **siguen en 53/53 con 0 fallos**
+tras añadir la optimización condicional de CE — el nuevo código no interfiere con los prepatches
+existentes.
+
+La razón de ser de este límite: forzar las optimizaciones restantes implicaría reescribir el
+**cuerpo completo** de métodos que dependen de la lógica interna de CE/VF, lo que rompe el
+principio del proyecto (no modificar ni arriesgar el comportamiento de los mods ajenos, activable
+sin ellos). `AmmoCountOfDef` es el único que cumple todos los criterios de forma limpia y ya está
+entregado.
