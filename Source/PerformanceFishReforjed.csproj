@@ -1,0 +1,115 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net472</TargetFramework>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <AssemblyName>PerformanceFishReforjed</AssemblyName>
+    <RootNamespace>PerformanceFishReforjed</RootNamespace>
+    <Version>0.5.0.0</Version>
+    <FileVersion>0.5.0.0</FileVersion>
+    <Product>Performance Fish Reforjed</Product>
+    <Authors>DGZ</Authors>
+    <Description>Reimplementacion de las optimizaciones de Performance Fish para RimWorld 1.6</Description>
+
+    <AppendTargetFrameworkToOutputPath>false</AppendTargetFrameworkToOutputPath>
+    <OutputPath>..\Assemblies\</OutputPath>
+    <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+    <CopyLocalLockFileAssemblies>false</CopyLocalLockFileAssemblies>
+    <DebugType>portable</DebugType>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);CS0436</NoWarn>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <!--
+      Referencias DIRECTAS a los ensamblados del juego, en lugar del paquete
+      Krafs.RimWorld.Ref. Motivo: ese paquete trae Assembly-CSharp 1.6.9676.17735 mientras el
+      juego instalado es 1.6.9655.19392, y el desajuste impide cargar el ensamblado fuera del
+      juego (y hace imposible verificar el prepatch por simulacion). Referenciando los DLL
+      reales la version coincide exactamente.
+    -->
+    <Reference Include="Assembly-CSharp">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!--
+      mscorlib se referencia desde el JUEGO y no desde el targeting pack de .NET 4.7.2.
+      Motivo verificado con Cecil: el reference assembly del targeting pack no contiene los
+      campos privados de List<T> (_items/_size/_version), asi que Krafs.Publicizer no puede
+      publicizarlos y la cache no podria leer List<T>._version. El mscorlib del juego si los
+      tiene, y ademas es el que realmente se carga en runtime, con lo que el compilador ve
+      exactamente la misma API que el juego.
+    -->
+    <Reference Include="mscorlib">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\mscorlib.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="Assembly-CSharp-firstpass">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\Assembly-CSharp-firstpass.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.CoreModule">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.CoreModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.IMGUIModule">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.IMGUIModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+    <Reference Include="UnityEngine.TextRenderingModule">
+      <HintPath>C:\RimWorld\RimWorldWin64_Data\Managed\UnityEngine.TextRenderingModule.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+
+    <!-- Publiciza ensamblados para poder usar sus tipos internos -->
+    <PackageReference Include="Krafs.Publicizer" Version="2.3.2" PrivateAssets="all" />
+    <!-- Atributos de Prepatcher: [FreePatch], [PrepatcherField], [ValueInitializer] -->
+    <PackageReference Include="Zetrith.Prepatcher" Version="1.2.0" PrivateAssets="all" />
+    <!-- Azucar de C# moderno sobre net472 -->
+    <PackageReference Include="PolySharp" Version="1.16.0" PrivateAssets="all" />
+    <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" PrivateAssets="all" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!--
+      Harmony normal. Se usa el 0Harmony que trae Prepatcher porque Prepatcher se carga
+      primero y es quien provee Harmony, y ademas es la copia cuyo Mono.Cecil interno usa
+      Prepatcher para entregarnos el ModuleDefinition en [FreePatch].
+      Se publiciza porque ese 0Harmony lleva Mono.Cecil ILMerged dentro.
+    -->
+    <Reference Include="0Harmony">
+      <HintPath>C:\RimWorld\Mods\Prepatcher\Assemblies\0Harmony.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Publicize Include="0Harmony" />
+
+    <!--
+      Assembly-CSharp se publiciza porque las caches de GetCompCaching necesitan leer campos
+      PRIVADOS del juego (verificado con Cecil: ThingWithComps.comps y WorldObject.comps son
+      privados). Krafs.Publicizer, ademas de publicizar, inyecta en NUESTRO ensamblado
+      [assembly: IgnoresAccessChecksTo("Assembly-CSharp")], que es lo que hace que la lectura
+      de esos campos privados no reviente en runtime bajo el Mono de Unity.
+      IncludeVirtualMembers=false por el mismo motivo que en Performance Fish: publicizar
+      miembros virtuales cambia la tabla de metodos y es innecesario.
+    -->
+    <Publicize Include="Assembly-CSharp" IncludeVirtualMembers="false" />
+
+    <!--
+      Invalidacion de caches por version de lista. List<T>._version es privado en mscorlib
+      (4.0.0.0), asi que se publiciza SOLO ese miembro y no toda la BCL. Aqui esta la clave de
+      correccion de las caches por indice: si la lista de comps cambia, _version cambia y la
+      entrada cacheada se considera sucia.
+    -->
+    <Publicize Include="mscorlib:System.Collections.Generic.List`1._version" />
+  </ItemGroup>
+
+</Project>
