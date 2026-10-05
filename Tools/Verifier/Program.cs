@@ -240,7 +240,7 @@ namespace PFRVerifier
                 "PerformanceFishReforjed.Prepatch.StorageSettingsPrepatch",     // storagePatches=2/2
                 "PerformanceFishReforjed.Prepatch.StoreUtilitySlotGroupPrepatch",// slotGroupPatches=3/3
                 "PerformanceFishReforjed.Prepatch.RoomPrepatch",                // 1/1
-                "PerformanceFishReforjed.Prepatch.WorldPawnsPrepatch",          // 3/3
+                "PerformanceFishReforjed.Prepatch.WorldPawnsPrepatch",          // 2/2 (DefPreventingMothball excluido: MissileGirl lo transpila)
                 "PerformanceFishReforjed.Prepatch.WorldObjectsHolderPrepatch",  // 1/1
                 "PerformanceFishReforjed.Prepatch.GasGridPrepatch",             // 6/6
                 "PerformanceFishReforjed.Prepatch.WorkGiver_DoBillPrepatch",    // 8/8

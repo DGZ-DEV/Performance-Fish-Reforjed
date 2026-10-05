@@ -7,15 +7,20 @@ using Verse;
 namespace PerformanceFishReforjed.Prepatch
 {
     /// <summary>
-    /// Prepatch para WorldPawns.AllPawnsAlive, WorldPawns.AllPawnsAliveOrDead y WorldPawns.DefPreventingMothball.
+    /// Prepatch para WorldPawns.AllPawnsAlive y WorldPawns.AllPawnsAliveOrDead.
     /// Sustituye el cuerpo de estos métodos por llamadas a nuestra caché.
+    ///
+    /// NOTA: DefPreventingMothball NO se reescribe. MissileGirl le aplica un transpiler que espera
+    /// el IL original de RimWorld; si lo sustituimos por nuestro cuerpo, el patrón del transpiler
+    /// deja de coincidir y MissileGirl falla al parchearlo ("Failed to patch WorldPawns.
+    /// DefPreventingMothball"). Dejamos ese método intacto para no romper el mod ajeno.
     /// </summary>
     internal static class WorldPawnsPrepatch
     {
         internal static int PatchesApplied;
         internal static int PatchesFailed;
 
-        internal const int ExpectedPatches = 3;
+        internal const int ExpectedPatches = 2;
 
         internal static void Apply(ModuleDefinition module)
         {
@@ -59,32 +64,6 @@ namespace PerformanceFishReforjed.Prepatch
                         isStatic: false,
                         typeof(WorldPawnsPatches),
                         nameof(WorldPawnsPatches.GetAllPawnsAliveOrDeadCached)))
-                {
-                    PatchesApplied++;
-                }
-                else
-                {
-                    PatchesFailed++;
-                }
-            }
-            catch (Exception)
-            {
-                PatchesFailed++;
-            }
-
-            // Patch DefPreventingMothball
-            try
-            {
-                if (BodyRewriter.Rewrite(
-                        module,
-                        "RimWorld.Planet.WorldPawns",
-                        "DefPreventingMothball",
-                        genericArity: 0,
-                        parameterCount: 1,
-                        isStatic: false,
-                        typeof(WorldPawnsPatches),
-                        nameof(WorldPawnsPatches.GetDefPreventingMothballCached),
-                        firstParameterTypeContains: "Verse.Pawn"))
                 {
                     PatchesApplied++;
                 }

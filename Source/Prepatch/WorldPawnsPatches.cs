@@ -44,24 +44,5 @@ namespace PerformanceFishReforjed.Prepatch
             }
             return cache.GetAllPawnsAliveOrDead(instance);
         }
-
-        /// <summary>
-        /// Gets the cached DefPreventingMothball for a pawn.
-        /// For now, we just call the original method as caching this is complex.
-        /// </summary>
-        public static HediffDef GetDefPreventingMothballCached(WorldPawns instance, Pawn pawn)
-        {
-            if (instance == null)
-                return null;
-
-            try
-            {
-                return instance.DefPreventingMothball(pawn);
-            }
-            catch
-            {
-                return null;
-            }
-        }
     }
 }
