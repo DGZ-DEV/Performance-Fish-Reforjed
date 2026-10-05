@@ -1,5 +1,6 @@
 using System;
 using PerformanceFishReforjed.Caching;
+using PerformanceFishReforjed.Compatibility;
 using Verse;
 
 namespace PerformanceFishReforjed
@@ -25,6 +26,9 @@ namespace PerformanceFishReforjed
             DefStatCache.ResetCounters();
 
             CacheLifecycle.ApplyPatches();
+
+            // Diagnostico de mods detectados (solo informa; no altera el rendimiento base).
+            CompatManager.LogDetectedMods();
         }
     }
 }
