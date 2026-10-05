@@ -49,10 +49,6 @@ namespace PerformanceFishReforjed.Prepatch
 
         // ─── Caches por Mapa ────────────────────────────────────────────────────────
 
-        /// <summary>Cache de masa de pawns (gear + inventory), indexada por thingIDNumber.</summary>
-        [PrepatcherField]
-        internal static extern ref IntCache<PawnMassCache> ReforjedMassCache(this Verse.Map map);
-
         /// <summary>Contador de objetos por celda.</summary>
         [PrepatcherField]
         internal static extern ref ItemCountGridData ReforjedItemCountGrid(this Verse.Map map);
@@ -66,14 +62,6 @@ namespace PerformanceFishReforjed.Prepatch
         /// <summary>Cache de AllowedToAccept de un StorageSettings.</summary>
         [PrepatcherField]
         internal static extern ref AllowedToAcceptCache ReforjedAllowedToAcceptCache(this StorageSettings settings);
-
-        /// <summary>Cache de capacidad de un SlotGroup.</summary>
-        [PrepatcherField]
-        internal static extern ref SlotGroupCapacityCache ReforjedCapacityCache(this SlotGroup slotGroup);
-
-        /// <summary>Cache de capacidad de un StorageGroup.</summary>
-        [PrepatcherField]
-        internal static extern ref StorageGroupCapacityCache ReforjedCapacityCache(this StorageGroup storageGroup);
 
         // ─── Caches de Listers ──────────────────────────────────────────────────────
 
@@ -89,31 +77,10 @@ namespace PerformanceFishReforjed.Prepatch
         [PrepatcherField]
         internal static extern ref ListerBuildingsCache ReforjedBuildingsCache(this ListerBuildings lister);
 
-        [PrepatcherField]
-        internal static extern ref IntCache<int> ReforjedThingOwnerIndexMap<T>(this ThingOwner<T> owner) where T : Thing;
-
         // ─── Caches de mundo ────────────────────────────────────────────────────────
 
         [PrepatcherField]
         internal static extern ref WorldPawnsCache ReforjedWorldPawnsCache(this RimWorld.Planet.WorldPawns pawns);
-
-        [PrepatcherField]
-        internal static extern ref WorldObjectsHolderCache ReforjedCachedWorldObjects(this RimWorld.Planet.WorldObjectsHolder holder);
-
-        // ─── Gas grid ───────────────────────────────────────────────────────────────
-
-        [PrepatcherField]
-        internal static extern ref ParallelGasGrid[] ReforjedParallelGasGrids(this GasGrid grid);
-
-        // ─── WorkGiver_DoBill (Fase 6) ─────────────────────────────────────────────
-
-        /// <summary>
-        /// Petição de trabalho potencial caché por instancia de WorkGiver_DoBill. El resultado de
-        /// <c>get_PotentialWorkThingRequest</c> es constante para un WorkGiverDef (sus defs fijos no
-        /// cambian en runtime), así que se puede resolver una sola vez.
-        /// </summary>
-        [PrepatcherField]
-        internal static extern ref WorkRequestCache ReforjedWorkRequestCache(this RimWorld.WorkGiver_DoBill wg);
 
         // ─── Reflection cache (Fase 5) ─────────────────────────────────────────────
 

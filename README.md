@@ -8,8 +8,8 @@
 > estilo "Performance Fish", escrita específicamente para esta versión: sin código de mods
 > antiguos, sin métodos obsoletos, verificada contra el `Assembly-CSharp` de **1.6.9655**.
 
-**EN:** 32 IL rewrites + 5 active runtime hooks + 7 disabled/not-wired (reverted to vanilla after the 2026-10-05 review, see PARCHES.md) targeting the CPU hotspots (comps, thing lists, buildings, storage, world pawns).
-**ES:** 32 reescrituras de IL + 5 enganches de runtime activos + 7 desactivados/no conectados (revertidos a vanilla tras la revisión de 2026-10-05, ver PARCHES.md) que atacan los puntos calientes de CPU (comps, listas de cosas, edificios, almacenamiento, pawns del mundo).
+**EN:** 32 IL rewrites + 5 active runtime hooks targeting the CPU hotspots (comps, thing lists, buildings, storage, world pawns). The broken/no-gain groups (gas, world-objects tick, `WorkGiver_DoBill`, store slot groups, capacity & mass heuristics) were removed in the review (see PARCHES.md) — behavior there is exact vanilla.
+**ES:** 32 reescrituras de IL + 5 enganches de runtime activos que atacan los puntos calientes de CPU (comps, listas de cosas, edificios, almacenamiento, pawns del mundo). Los grupos rotos/sin ganancia (gas, tick de objetos de mundo, `WorkGiver_DoBill`, grupos de almacenamiento, heurísticos de capacidad y masa) se eliminaron en la revisión (ver PARCHES.md) — el comportamiento allí es vanilla exacto.
 
 ---
 
@@ -70,16 +70,11 @@
 
 ```
 gettersRewritten=4 | compPatches=9/9 | listerPatches=6/6 | buildingPatches=7/7 |
-gridPatches=1/1 | storagePatches=2/2 | slotGroupPatches=0/0 | roomPatches=1/1 |
-worldPawnsPatches=2/2 | worldObjectsHolderPatches=0/0 | gasGridPatches=0/0 |
-workGiverPatches=0/0
+gridPatches=1/1 | storagePatches=2/2 | roomPatches=1/1 | worldPawnsPatches=2/2
 ```
 
 **EN:** If any counter shows `0/N` or `Failed>0`, your RimWorld version differs from the verified one (1.6.9655): the game keeps working with vanilla behavior in those spots, but those optimizations are disabled.
 **ES:** Si algún contador aparece como `0/N` o con `Failed>0`, tu versión de RimWorld no coincide con la verificada (1.6.9655): el juego sigue funcionando con comportamiento vanilla en esos puntos, pero esas optimizaciones quedan desactivadas.
-
-> **EN:** Groups deliberately at `0/0` (slotGroup, worldObjectsHolder, gasGrid, workGiver) are **by design**, not a version mismatch: they were removed/reverted in the 2026-10-05 review because they either had gameplay bugs or gained nothing. See PARCHES.md.
-> **ES:** Los grupos deliberadamente en `0/0` (slotGroup, worldObjectsHolder, gasGrid, workGiver) son **por diseño**, no un desajuste de versión: se quitaron/revirtieron en la revisión de 2026-10-05 porque tenían bugs de gameplay o no aportaban nada. Ver PARCHES.md.
 
 ---
 

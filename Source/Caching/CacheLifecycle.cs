@@ -64,21 +64,6 @@ namespace PerformanceFishReforjed.Caching
             ApplyItemCountGridPostfixes();
             ApplyStorageSettingsInvalidation();
             ApplyBuildingSpawnDespawnPostfixes();
-            ApplySlotGroupCapacityPatches();
-            ApplyStorageGroupCapacityPatches();
-            ApplyMassUtilityPatches();
-        }
-
-        /// <summary>
-        /// Engancha parches de compatibilidad de GasGrid (ExposeData para persistencia).
-        ///
-        /// DESACTIVADO (Hallazgos C2/H1): el prepatch de gas se revirtió a vanilla íntegro, y este
-        /// parche copiaba entre los grids paralelos y el array vanilla alrededor de ExposeData.
-        /// Con el prepatch desactivado volvería a copiar los grids vacíos sobre el array real del
-        /// juego en cada guardado, corrompiendo la partida. Se deja vacío a propósito.
-        /// </summary>
-        private static void ApplyGasGridPatches()
-        {
         }
 
         /// <summary>
@@ -347,55 +332,6 @@ namespace PerformanceFishReforjed.Caching
             {
                 Log.Error($"[PerformanceFishReforjed] Failed to patch ListerBuildings.{methodName}: {e}");
             }
-        }
-
-        /// <summary>
-        /// Engancha el parche de capacidad de SlotGroup (C5).
-        ///
-        /// DESACTIVADO (Hallazgo L1): los enganches de esta familia nunca llegaron a aplicarse (los
-        /// nombres de metodo con barra no los encuentra <c>AccessTools.Method</c>), y si se
-        /// conectaran tal como estan escritos romperian el juego:
-        /// <list type="bullet">
-        /// <item><c>SlotGroupCapacityCache.IsLikelyFull</c> considera lleno un grupo por encima de
-        /// 3 objetos por celda, ignorando los limites por celda que fijan los edificios de
-        /// almacenamiento y los mods: un almacen legítimo quedaria "lleno" y nunca recibiria
-        /// objetos acarreados.</item>
-        /// <item>El atajo sobre <c>StoreUtility.TryFindBestBetterStoreCellForWorker</c> corta el
-        /// metodo original cuando esa cache (desincronizada) dice "lleno": se dejan de acarrear
-        /// objetos a celdas con sitio real.</item>
-        /// </list>
-        /// Se deja vacio a proposito: el comportamiento es exactamente el de vanilla.
-        /// </summary>
-        private static void ApplySlotGroupCapacityPatches()
-        {
-        }
-
-        /// <summary>
-        /// Engancha el parche de capacidad de StorageGroup (C6).
-        ///
-        /// DESACTIVADO (Hallazgo L1): si se conectara tal como esta escrito, romperia el juego:
-        /// <c>StorageGroupCapacityCache.Recalculate</c> comprueba <c>members[i] is SlotGroup</c>,
-        /// pero <c>StorageGroup.members</c> contiene <c>IStorageGroupMember</c> (no <c>SlotGroup</c>),
-        /// asi que la condicion nunca es true y el grupo enlazado tendria capacidad cero y nunca
-        /// recibiria objetos acarreados.
-        /// Se deja vacio a proposito: el comportamiento es exactamente el de vanilla.
-        /// </summary>
-        private static void ApplyStorageGroupCapacityPatches()
-        {
-        }
-
-        /// <summary>
-        /// Engancha los parches de cache de masa de pawns (MassUtilityCaching).
-        ///
-        /// DESACTIVADO (Hallazgo L1 + Hallazgo de la auditoria): nunca llego a aplicarse por el
-        /// mismo motivo que C5/C6, y si se conectara seria incorrecto: <c>PawnMassCache</c> comparte
-        /// un unico <c>LastUpdatedTick</c> entre gear e inventario (con TTL distintos de 3072 y 1024),
-        /// asi que refrescar uno invalidaria con la marca del otro y la masa del equipo podria leerse
-        /// como masa de inventario hasta 3072 ticks. Se deja vacio a proposito: el comportamiento es
-        /// exactamente el de vanilla.
-        /// </summary>
-        private static void ApplyMassUtilityPatches()
-        {
         }
 
         /// <summary>Postfix: partida nueva o cargada, las caches anteriores ya no valen.</summary>

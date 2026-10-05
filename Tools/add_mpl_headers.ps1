@@ -8,22 +8,15 @@ $files = @(
   "Source\Caching\ByReference.cs",
   "Source\Caching\ListerThingsCaches.cs",
   "Source\Caching\ListerBuildingsCaches.cs",
-  "Source\Listers\ThingOwnerOptimization.cs",
-  "Source\Caching\ParallelGasGrid.cs",
-  "Source\Caching\WorldObjectsHolderCache.cs",
-  "Source\Prepatch\WorldObjectsHolderPatches.cs",
   "Source\Caching\WorldPawnsCache.cs",
   "Source\Hediffs\HediffSetCaching.cs",
   "Source\Caching\DefStatCache.cs",
-  "Source\Caching\PawnMassCache.cs",
-  "Source\Prepatch\MassUtilityPatches.cs",
   "Source\Prepatch\RoomPrepatch.cs",
   "Source\Prepatch\RoomHarmonyPatches.cs",
   "Source\Caching\AllowedToAcceptCache.cs",
   "Source\Caching\ItemCountGrid.cs",
   "Source\Prepatch\GridsUtilityPrepatch.cs",
-  "Source\Caching\StorageBlockerGrid.cs",
-  "Source\Prepatch\StoreUtilitySlotGroupPrepatch.cs"
+  "Source\Caching\StorageBlockerGrid.cs"
 )
 
 $header = @"

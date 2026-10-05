@@ -57,18 +57,10 @@ namespace PerformanceFishReforjed.Prepatch
                 $"gridPatchesFailed={GridsUtilityPrepatch.PatchesFailed}",
                 $"storagePatches={StorageSettingsPrepatch.PatchedCount}/{StorageSettingsPrepatch.PatchedCount + StorageSettingsPrepatch.FailedCount}",
                 $"storagePatchesFailed={StorageSettingsPrepatch.FailedCount}",
-                $"slotGroupPatches={StoreUtilitySlotGroupPrepatch.PatchedCount}/{StoreUtilitySlotGroupPrepatch.PatchedCount + StoreUtilitySlotGroupPrepatch.FailedCount}",
-                $"slotGroupPatchesFailed={StoreUtilitySlotGroupPrepatch.FailedCount}",
                 $"roomPatches={RoomPrepatch.PatchesApplied}/{RoomPrepatch.ExpectedPatches}",
                 $"roomPatchesFailed={RoomPrepatch.PatchesFailed}",
                 $"worldPawnsPatches={WorldPawnsPrepatch.PatchesApplied}/{WorldPawnsPrepatch.ExpectedPatches}",
-                $"worldPawnsPatchesFailed={WorldPawnsPrepatch.PatchesFailed}",
-                $"worldObjectsHolderPatches={WorldObjectsHolderPrepatch.PatchesApplied}/{WorldObjectsHolderPrepatch.ExpectedPatches}",
-                $"worldObjectsHolderPatchesFailed={WorldObjectsHolderPrepatch.PatchesFailed}",
-                $"gasGridPatches={GasGridPrepatch.PatchesApplied}/{GasGridPrepatch.ExpectedPatches}",
-                $"gasGridPatchesFailed={GasGridPrepatch.PatchesFailed}",
-                $"workGiverPatches={WorkGiver_DoBillPrepatch.PatchesApplied}/{WorkGiver_DoBillPrepatch.ExpectedPatches}",
-                $"workGiverPatchesFailed={WorkGiver_DoBillPrepatch.PatchesFailed}"
+                $"worldPawnsPatchesFailed={WorldPawnsPrepatch.PatchesFailed}"
             });
 
             AddStamp(module, stamp);

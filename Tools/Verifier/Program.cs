@@ -238,12 +238,8 @@ namespace PFRVerifier
                 "PerformanceFishReforjed.Prepatch.ListerBuildingsPrepatch",     // 7/7
                 "PerformanceFishReforjed.Prepatch.GridsUtilityPrepatch",        // 1/1
                 "PerformanceFishReforjed.Prepatch.StorageSettingsPrepatch",     // storagePatches=2/2
-                "PerformanceFishReforjed.Prepatch.StoreUtilitySlotGroupPrepatch",// slotGroupPatches=0/0 (L2: reescritura sin ganancia)
                 "PerformanceFishReforjed.Prepatch.RoomPrepatch",                // 1/1
                 "PerformanceFishReforjed.Prepatch.WorldPawnsPrepatch",          // 2/2 (DefPreventingMothball excluido: MissileGirl lo transpila)
-                "PerformanceFishReforjed.Prepatch.WorldObjectsHolderPrepatch",  // 0/0 (C1: revertido a vanilla)
-                "PerformanceFishReforjed.Prepatch.GasGridPrepatch",             // 0/0 (C2/H1: revertido a vanilla)
-                "PerformanceFishReforjed.Prepatch.WorkGiver_DoBillPrepatch",    // 0/0 (L2/M5: reescritura sin ganancia)
             };
 
             int totalApplied = 0;
@@ -259,8 +255,7 @@ namespace PFRVerifier
                 }
 
                 bool isDefStat = typeName.EndsWith("DefStatCachePrepatch");
-                bool isStartStyle = typeName.EndsWith("StorageSettingsPrepatch")
-                                    || typeName.EndsWith("StoreUtilitySlotGroupPrepatch");
+                bool isStartStyle = typeName.EndsWith("StorageSettingsPrepatch");
 
                 int applied;
                 int failed;
@@ -276,9 +271,8 @@ namespace PFRVerifier
                 {
                     applied = GetIntStatic(t, "PatchedCount");
                     failed = GetIntStatic(t, "FailedCount");
-                    // StorageSettings conserva su optimizacion (2); StoreUtilitySlotGroup quedo
-                    // desactivado por L2 (0).
-                    expected = typeName.EndsWith("StorageSettingsPrepatch") ? 2 : 0;
+                    // StorageSettings conserva su optimizacion (2).
+                    expected = 2;
                 }
                 else
                 {

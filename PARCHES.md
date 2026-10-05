@@ -109,13 +109,13 @@
 | H3 | `ListerBuildings` (several postfixes) | **Activo** | **EN:** Keeps the building indexes (A4) in sync when buildings are added/removed. **ES:** Mantiene los índices de edificios (A4) al añadir/quitar edificios. |
 | H4 | `Building` spawn/despawn | **Activo** | **EN:** Building indexes correct when building/deconstructing. **ES:** Índices de edificios correctos al construir/deconstruir. |
 | H5 | `StorageSettings` invalidation | **Activo** | **EN:** Clears the AllowedToAccept caches when a storage filter changes. **ES:** Vacía las caches de AllowedToAccept al cambiar un filtro de almacén. |
-| H6 | `SlotGroup` / `StorageGroup` capacities | **Desactivado (L1)** | **EN:** Would have kept the capacity heuristics coherent, but the heuristics were wrong (3 objects/cell ignores building limits; `StorageGroup.members is SlotGroup` is never true). Left as vanilla. **ES:** Habrían mantenido coherentes los heurísticos de capacidad, pero eran incorrectos (3 objetos/celda ignora los límites de los edificios; `StorageGroup.members is SlotGroup` nunca es true). Se deja como vanilla. |
-| H7 | `MassUtility.GearMass` / `InventoryMass` | **Desactivado (L1)** | **EN:** Gear/inventory mass cache shared a single timestamp between two different TTLs, so one family could read the other's stale value. Left as vanilla. **ES:** La caché de masa compartía una única marca de tiempo entre dos TTL distintos, así que una familia podía leer el valor viejo de la otra. Se deja como vanilla. |
-| H8 | `GasGrid.ExposeData` | **Desactivado (C2/H1)** | **EN:** Gas is fully vanilla now; there is no parallel grid to persist. **ES:** El gas es íntegramente vanilla; no hay grid paralelo que persistir. |
-| H9 | `StoreUtility.TryFindBestBetterStoreCellForWorker` (capacity shortcut) | **Desactivado (L1)** | **EN:** The shortcut could stop hauling to cells that have real space when the heuristic said "full". Left as vanilla. **ES:** El atajo podía dejar de acarrear a celdas con sitio real cuando el heurístico decía "lleno". Se deja como vanilla. |
+| H6 | `SlotGroup` / `StorageGroup` capacities | **Eliminado (L1)** | **EN:** Would have kept the capacity heuristics coherent, but the heuristics were wrong (3 objects/cell ignores building limits; `StorageGroup.members is SlotGroup` is never true). The dead code was removed from the repo; behavior is vanilla. **ES:** Habrían mantenido coherentes los heurísticos de capacidad, pero eran incorrectos (3 objetos/celda ignora los límites de los edificios; `StorageGroup.members is SlotGroup` nunca es true). El código muerto se eliminó del repo; el comportamiento es vanilla. |
+| H7 | `MassUtility.GearMass` / `InventoryMass` | **Eliminado (L1)** | **EN:** Gear/inventory mass cache shared a single timestamp between two different TTLs, so one family could read the other's stale value. Dead `[HarmonyPatch]` code removed; vanilla. **ES:** La caché de masa compartía una única marca de tiempo entre dos TTL distintos, así que una familia podía leer el valor viejo de la otra. Código muerto `[HarmonyPatch]` eliminado; vanilla. |
+| H8 | `GasGrid.ExposeData` | **Eliminado (C2/H1)** | **EN:** Gas is fully vanilla now; there is no parallel grid to persist. Dead `[HarmonyPatch]` code removed. **ES:** El gas es íntegramente vanilla; no hay grid paralelo que persistir. Código muerto `[HarmonyPatch]` eliminado. |
+| H9 | `StoreUtility.TryFindBestBetterStoreCellForWorker` (capacity shortcut) | **Eliminado (L1)** | **EN:** The shortcut could stop hauling to cells that have real space when the heuristic said "full". Dead `[HarmonyPatch]` code removed; vanilla. **ES:** El atajo podía dejar de acarrear a celdas con sitio real cuando el heurístico decía "lleno". Código muerto `[HarmonyPatch]` eliminado; vanilla. |
 | H10 | `HediffSet` queries | **No conectado** | **EN:** Dead `[HarmonyPatch]` code: nothing calls `PatchAll`, so it never runs. **ES:** Código muerto `[HarmonyPatch]`: nada llama a `PatchAll`, así que nunca se ejecuta. |
 | H11 | `Room.Role` / `Room.Owners` | **No conectado** | **EN:** Dead `[HarmonyPatch]` code: never runs. **ES:** Código muerto `[HarmonyPatch]`: nunca se ejecuta. |
-| H12 | `ThingOwner<T>` | **No conectado** | **EN:** Dead `[HarmonyPatch]` code: never runs (the `Remove` postfix is written correctly and is safe to wire later). **ES:** Código muerto `[HarmonyPatch]`: nunca se ejecuta (el postfix de `Remove` está escrito correctamente y es seguro conectarlo más adelante). |
+| H12 | `ThingOwner<T>` | **Eliminado** | **EN:** Dead `[HarmonyPatch]` code (never ran) removed from the repo. **ES:** Código muerto `[HarmonyPatch]` (nunca se ejecutaba) eliminado del repo. |
 
 ---
 
@@ -129,5 +129,4 @@
 
 **Verification / Verificación:** the prepatch stamp in the game log must show
 `gettersRewritten=4, compPatches=9/9, listerPatches=6/6, buildingPatches=7/7, gridPatches=1/1,
-storagePatches=2/2, slotGroupPatches=0/0, roomPatches=1/1, worldPawnsPatches=2/2,
-worldObjectsHolderPatches=0/0, gasGridPatches=0/0, workGiverPatches=0/0` and **no `Failed` above 0**.
+storagePatches=2/2, roomPatches=1/1, worldPawnsPatches=2/2` and **no `Failed` above 0**.

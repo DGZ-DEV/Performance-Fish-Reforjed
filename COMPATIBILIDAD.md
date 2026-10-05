@@ -15,10 +15,10 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 - `StorageSettings.AllowedToAccept` (cachés separadas por Thing y por ThingDef)
 - `Room.ContainedBeds`
 - `WorldPawns` (AllPawnsAlive/OrDead; **DefPreventingMothball NO**: MissileGirl lo transpila)
-- ~~SlotGroup capacities~~ (quitado, sin ganancia — L2)
-- ~~`WorldObjectsHolder.Tick`~~ (revertido a vanilla — C1)
-- ~~`GasGrid`: Tick/AddGas/AnyGasAt/DensityAt~~ (revertido a vanilla — C2/H1)
-- ~~`WorkGiver_DoBill` (8 métodos)~~ (quitado, sin ganancia y rompía parches ajenos — L2/M5)
+- ~~SlotGroup capacities~~ (eliminado del repo, sin ganancia — L1/L2)
+- ~~`WorldObjectsHolder.Tick`~~ (eliminado, revertido a vanilla — C1)
+- ~~`GasGrid`: Tick/AddGas/AnyGasAt/DensityAt~~ (eliminado, revertido a vanilla — C2/H1)
+- ~~`WorkGiver_DoBill` (8 métodos)~~ (eliminado, sin ganancia y rompía parches ajenos — L2/M5)
 
 **Enganches Harmony (runtime, activos: 5):**
 - `Game.FinalizeInit` (vaciado de caches + invalidación de DefStatCache)
@@ -26,15 +26,15 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 - `StorageSettings` (invalidación de AllowedToAccept al cambiar filtros)
 - `Building` spawn/despawn (índices de edificios)
 
-**Enganches desactivados o no conectados (vanilla, tras revisión 2026-10-05):**
+**Enganches eliminados o no conectados (vanilla, código muerto retirado tras revisión 2026-10-05):**
 - ~~`HediffSet`: GetFirstHediffOfDef, HasHediff, GetNotMissingParts, DirtyCache~~ (no conectado — L1)
-- ~~`GasGrid.ExposeData`~~ (no hay grid paralelo — C2/H1)
-- ~~`StorageGroup.RemoveMember`/Notify_SettingsChanged~~ (desactivado — L1)
+- ~~`GasGrid.ExposeData`~~ (eliminado: no hay grid paralelo — C2/H1)
+- ~~`StorageGroup.RemoveMember`/Notify_SettingsChanged~~ (eliminado — L1)
 - ~~`Room.Role`/`Room.Owners`~~ (no conectado — L1)
-- ~~`SlotGroup.Notify_AddedCell`/Notify_LostCell~~ (desactivado — L1)
-- ~~`StoreUtility.TryFindBestBetterStoreCellForWorker`~~ (desactivado — L1)
-- ~~`MassUtility.GearMass`/InventoryMass~~ (desactivado — L1)
-- ~~`ThingOwner.ExposeData`/TryAdd/Remove~~ (no conectado — L1; el postfix de `Remove` está escrito correcto para conectarse en el futuro)
+- ~~`SlotGroup.Notify_AddedCell`/Notify_LostCell~~ (eliminado — L1)
+- ~~`StoreUtility.TryFindBestBetterStoreCellForWorker`~~ (eliminado — L1)
+- ~~`MassUtility.GearMass`/InventoryMass~~ (eliminado — L1)
+- ~~`ThingOwner.ExposeData`/TryAdd/Remove~~ (eliminado — L1; nunca se conectó)
 
 ---
 
@@ -51,7 +51,7 @@ presente en `C:\Users\User\Desktop\MODS`, frente a la superficie optimizada del 
 - **`WorldPawns.GetSituation`** → VF. Reforjed no toca ese método. OK.
 
 ### 3. PickUpAndHaul (`Mehni.PickUpAndHaul`) — parcheo DINÁMICO
-- **`WorkGiver_Haul.ShouldSkip`** → PUA postfix (skip corps) + **Reforjed: `WorkGiver_DoBill.ShouldSkip`** (distinto tipo). No chocan por tipo, pero **ambos optimizan el flujo de acarreo**. OK.
+- **`WorkGiver_Haul.ShouldSkip`** → PUA postfix (skip corps). Reforjed **ya no** toca la familia `WorkGiver_DoBill` (eliminada por L2/M5), así que no hay parche de acarreo propio compitiendo. OK.
 - **`JobGiver_Haul.TryGiveJob`** transpiler → PUA modifica el IL de hauling. Reforjed no toca `JobGiver_Haul`. OK.
 - **`Pawn_InventoryTracker.Notify_ItemRemoved`** → PUA postfix. Reforjed no lo toca directamente. OK.
 - **`ITab_Pawn_Gear.DrawThingRow`** transpiler → PUA. Reforjed no toca. OK.

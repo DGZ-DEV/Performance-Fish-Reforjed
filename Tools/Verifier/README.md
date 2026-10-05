@@ -2,8 +2,7 @@
 
 Herramienta de consola (`Tools/Verifier`) que ejecuta la **misma pipeline de prepatch del mod
 compilado** contra el `Assembly-CSharp.dll` real de RimWorld 1.6 y comprueba que las **32
-reescrituras de IL** se aplican sin fallos (los grupos revertidos por la revisión de 2026-10-05
-aparecen como `0/0` por diseño).
+reescrituras de IL** se aplican sin fallos.
 
 ## Por qué existe
 
@@ -32,12 +31,8 @@ ListerThingsPrepatch          applied=6/6   failed=0
 ListerBuildingsPrepatch       applied=7/7   failed=0
 GridsUtilityPrepatch          applied=1/1   failed=0
 StorageSettingsPrepatch       applied=2/2   failed=0
-StoreUtilitySlotGroupPrepatch applied=0/0   failed=0
 RoomPrepatch                  applied=1/1   failed=0
 WorldPawnsPrepatch            applied=2/2   failed=0
-WorldObjectsHolderPrepatch    applied=0/0   failed=0
-GasGridPrepatch               applied=0/0   failed=0
-WorkGiver_DoBillPrepatch      applied=0/0   failed=0
 
 TOTAL reescrituras de cuerpo: 32/32
 RESULTADO: TODOS LOS PARCHES VERIFICADOS (0 fallos).
