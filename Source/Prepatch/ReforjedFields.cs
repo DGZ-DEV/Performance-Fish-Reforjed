@@ -117,10 +117,13 @@ namespace PerformanceFishReforjed.Prepatch
         ///
         /// La vida del cache va atada a la instancia del tipo del juego.
         /// Se registra en CacheRegistry para vaciado al cargar partida.
+        ///
+        /// NOTA: los campos Prepatcher requieren un tipo destino concreto. No se puede declarar un
+        /// accesor genérico <c>ReforjedReflectionCache&lt;T&gt;(this T obj)</c>; Prepatcher no puede
+        /// inyectar un campo en un tipo abierto <c>T</c> ("Couldn't resolve target type for new field").
+        /// Por eso cada tipo que necesita cache tiene su propia sobrecarga concreta (ThingDef, Map,
+        /// Game, ...). Si se necesita cache para un tipo no listado, añadir una sobrecarga explícita.
         /// </summary>
-        [PrepatcherField]
-        internal static extern ref IntCache<int> ReforjedReflectionCache<T>(this T obj) where T : class;
-
         [PrepatcherField]
         internal static extern ref IntCache<int> ReforjedReflectionCache(this ThingDef def);
 
