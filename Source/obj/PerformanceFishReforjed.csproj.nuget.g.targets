@@ -1,7 +1,0 @@
-﻿<?xml version="1.0" encoding="utf-8" standalone="no"?>
-<Project ToolsVersion="14.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <ImportGroup Condition=" '$(ExcludeRestorePackageImports)' != 'true' ">
-    <Import Project="$(NuGetPackageRoot)polysharp\1.16.0\buildTransitive\PolySharp.targets" Condition="Exists('$(NuGetPackageRoot)polysharp\1.16.0\buildTransitive\PolySharp.targets')" />
-    <Import Project="$(NuGetPackageRoot)krafs.publicizer\2.3.2\build\Krafs.Publicizer.targets" Condition="Exists('$(NuGetPackageRoot)krafs.publicizer\2.3.2\build\Krafs.Publicizer.targets')" />
-  </ImportGroup>
-</Project>
